@@ -1,0 +1,31 @@
+{
+  "sponsor": {
+    "name": "Elkjøp",
+    "logoUrl": "https://api-dev.vio.live/objects/uploads/adc65620-01ff-4c66-a7e2-de456495b9d1",
+    "primaryColor": "#003087"
+  },
+  "match": {
+    "homeTeam": "Barcelona",
+    "awayTeam": "PSG",
+    "homeScore": 2,
+    "awayScore": 1,
+    "minute": 65,
+    "period": "2T"
+  },
+  "demoProducts": [
+    {
+      "id": "408895",
+      "name": "Samsung 85\" Neo QLED 4K TV",
+      "price": 17990,
+      "currency": "NOK",
+      "imageUrl": "https://assets.elko.no/image/image/media/catalog/product/S/a/Samsung_QN85D_TV_3.jpg"
+    },
+    {
+      "id": "408896",
+      "name": "Samsung Soundbar HW-S710D",
+      "price": 6999,
+      "currency": "NOK",
+      "imageUrl": "https://assets.elko.no/image/image/media/catalog/product/H/W/HW-S710D_001_Front_Black.jpg"
+    }
+  ]
+}
