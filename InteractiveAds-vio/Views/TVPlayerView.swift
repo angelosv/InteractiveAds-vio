@@ -6,16 +6,13 @@ struct TVPlayerView: View {
     let products: [TVProduct]
 
     @StateObject private var wsManager = VioTVWebSocketManager.shared
-    @State private var showOverlay = false
-    @State private var activeProduct: TVProduct? = nil
+    @State private var commerceProduct: CommerceProduct? = nil
+    @State private var showCard = false
     @FocusState private var isSimulateButtonFocused: Bool
 
-    // Secret trigger: press play button 3 times
-    @State private var tapCount = 0
-
     var body: some View {
-        ZStack {
-            // Background — dark gradient simulating ad break
+        ZStack(alignment: .bottomLeading) {
+            // Background
             LinearGradient(
                 colors: [Color(red: 0.05, green: 0.05, blue: 0.15), Color(red: 0.1, green: 0.05, blue: 0.2)],
                 startPoint: .topLeading,
@@ -23,11 +20,10 @@ struct TVPlayerView: View {
             )
             .ignoresSafeArea()
 
-            // Ad break content
             VStack {
                 Spacer()
 
-                // Elkjøp ad placeholder
+                // Elkjøp ad
                 VStack(spacing: 16) {
                     AsyncImage(url: URL(string: sponsor.logoUrl)) { phase in
                         if case .success(let img) = phase {
@@ -47,33 +43,39 @@ struct TVPlayerView: View {
 
                 Spacer()
 
-                // Score bar
                 scoreBar
 
-                // Hidden simulate button
                 Button(action: simulateAd) {
-                    Text("▶ Simular anuncio")
-                        .font(.caption)
+                    Text("▶ Simular anuncio Elkjøp")
+                        .font(.system(size: 16))
                         .foregroundColor(isSimulateButtonFocused ? .yellow : .white.opacity(0.3))
                 }
                 .focused($isSimulateButtonFocused)
-                .padding(.bottom, 20)
+                .padding(.bottom, 24)
             }
 
-            // Shoppable overlay
-            if showOverlay, let product = activeProduct {
-                TVShoppableOverlay(
-                    product: product,
-                    sponsor: sponsor
-                ) {
-                    withAnimation { showOverlay = false }
-                }
+            // Product card — esquina inferior izquierda
+            if showCard, let product = commerceProduct {
+                TVProductCard(product: product, sponsor: sponsor)
+                    .padding(.leading, 60)
+                    .padding(.bottom, 80)
             }
         }
         .onReceive(wsManager.$lastShoppableAd) { event in
-            guard let event = event, let product = event.product else { return }
-            activeProduct = product
-            withAnimation { showOverlay = true }
+            guard let event = event else { return }
+            let productId = event.product?.id ?? products.first?.id ?? "408895"
+            Task {
+                if let fetched = await VioCommerceService.shared.fetchProduct(id: productId) {
+                    await MainActor.run {
+                        commerceProduct = fetched
+                        withAnimation { showCard = true }
+                        // Auto-dismiss a los 15s
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
+                            withAnimation { showCard = false }
+                        }
+                    }
+                }
+            }
         }
         .onAppear {
             let config = VioTVConfigLoader.shared.config!
@@ -85,47 +87,34 @@ struct TVPlayerView: View {
         HStack(spacing: 40) {
             VStack {
                 Text(match.homeTeam)
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 24, weight: .bold)).foregroundColor(.white)
                 Text("\(match.homeScore)")
-                    .font(.system(size: 48, weight: .heavy))
-                    .foregroundColor(.white)
+                    .font(.system(size: 48, weight: .heavy)).foregroundColor(.white)
             }
-
             VStack(spacing: 4) {
                 Text("\(match.minute)'")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(.yellow)
-                Text(match.period)
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.6))
+                    .font(.system(size: 18, weight: .medium)).foregroundColor(.yellow)
+                Text(match.period).font(.caption).foregroundColor(.white.opacity(0.6))
                 Text("PAUSE")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.red)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Color.red.opacity(0.2))
-                    .clipShape(Capsule())
+                    .font(.system(size: 12, weight: .bold)).foregroundColor(.red)
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Color.red.opacity(0.2)).clipShape(Capsule())
             }
-
             VStack {
                 Text(match.awayTeam)
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 24, weight: .bold)).foregroundColor(.white)
                 Text("\(match.awayScore)")
-                    .font(.system(size: 48, weight: .heavy))
-                    .foregroundColor(.white)
+                    .font(.system(size: 48, weight: .heavy)).foregroundColor(.white)
             }
         }
-        .padding(.vertical, 24)
-        .padding(.horizontal, 48)
+        .padding(.vertical, 24).padding(.horizontal, 48)
         .background(Color.black.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .padding(.bottom, 16)
     }
 
     private func simulateAd() {
-        guard let product = products.first else { return }
+        let product = products.first!
         wsManager.simulateShoppableAd(product: product, sponsor: sponsor)
     }
 }

@@ -1,0 +1,77 @@
+import SwiftUI
+
+/// Card de producto en esquina inferior izquierda — datos de Commerce Vio
+struct TVProductCard: View {
+    let product: CommerceProduct
+    let sponsor: TVSponsor
+
+    @State private var appeared = false
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        HStack(spacing: 0) {
+            // Imagen producto
+            AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
+                if case .success(let img) = phase {
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } else {
+                    Rectangle().fill(Color.white.opacity(0.08))
+                        .overlay(Image(systemName: "shippingbox").foregroundColor(.white.opacity(0.3)))
+                }
+            }
+            .frame(width: 160, height: 120)
+            .clipped()
+
+            // Info
+            VStack(alignment: .leading, spacing: 8) {
+                // Sponsor logo
+                HStack {
+                    AsyncImage(url: URL(string: sponsor.logoUrl)) { phase in
+                        if case .success(let img) = phase {
+                            img.resizable().aspectRatio(contentMode: .fit)
+                        } else { EmptyView() }
+                    }
+                    .frame(height: 18)
+                    Spacer()
+                }
+
+                Text(product.name)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(2)
+
+                Text(product.formattedPrice)
+                    .font(.system(size: 22, weight: .heavy))
+                    .foregroundColor(.yellow)
+
+                // CTA
+                Button(action: {}) {
+                    Text("Se mer →")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(isFocused ? .black : .white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(isFocused ? Color.yellow : Color.white.opacity(0.15))
+                        .clipShape(Capsule())
+                        .scaleEffect(isFocused ? 1.05 : 1.0)
+                        .animation(.spring(response: 0.25), value: isFocused)
+                }
+                .focused($isFocused)
+            }
+            .padding(16)
+        }
+        .frame(width: 420, height: 120)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(red: 0.07, green: 0.07, blue: 0.12).opacity(0.95))
+                .shadow(color: .black.opacity(0.6), radius: 16, x: 0, y: 4)
+        )
+        .offset(y: appeared ? 0 : 60)
+        .opacity(appeared ? 1 : 0)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: appeared)
+        .onAppear {
+            appeared = true
+            isFocused = true
+        }
+    }
+}
