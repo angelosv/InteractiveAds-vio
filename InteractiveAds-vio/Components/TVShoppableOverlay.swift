@@ -94,7 +94,6 @@ struct TVShoppableProductCard: View {
                     .foregroundColor(.white)
                     .padding(.top, 2)
 
-                Spacer()
 
                 ZStack {
                     HStack(spacing: 10) {
