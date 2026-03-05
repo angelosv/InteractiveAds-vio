@@ -34,130 +34,106 @@ struct TVShoppableProductCard: View {
     private let cardBg = Color(red: 0.09, green: 0.08, blue: 0.13)
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        HStack(alignment: .center, spacing: 0) {
 
-            // TOP — imagen + info
-            HStack(alignment: .top, spacing: 0) {
+            // Imagen producto
+            ZStack(alignment: .topLeading) {
+                AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
+                    if case .success(let img) = phase {
+                        img.resizable().aspectRatio(contentMode: .fill)
+                    } else {
+                        Rectangle().fill(Color.white.opacity(0.06))
+                    }
+                }
+                .frame(width: 160, height: 160)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 14))
 
-                // Imagen producto con badge NEW
-                ZStack(alignment: .topLeading) {
-                    AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
+                Text("NEW")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.red)
+                    .clipShape(Capsule())
+                    .padding(10)
+            }
+            .padding(.leading, 20)
+
+            // Info
+            VStack(alignment: .leading, spacing: 10) {
+
+                // Sponsor
+                HStack(spacing: 8) {
+                    AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
                         if case .success(let img) = phase {
                             img.resizable().aspectRatio(contentMode: .fill)
                         } else {
-                            Rectangle().fill(Color.white.opacity(0.06))
+                            Circle().fill(Color.blue)
                         }
                     }
-                    .frame(width: 200, height: 200)
-                    .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .frame(width: 28, height: 28)
+                    .clipShape(Circle())
 
-                    // Badge NEW
-                    Text("NEW")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 5)
-                        .background(Color.red)
-                        .clipShape(Capsule())
-                        .padding(12)
+                    Text(sponsorName.uppercased())
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.65))
+                        .kerning(0.8)
                 }
 
-                // Info derecha
-                VStack(alignment: .leading, spacing: 10) {
+                // Nombre
+                Text(product.name)
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(.white)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                    // Sponsor: avatar + nombre
-                    HStack(spacing: 8) {
-                        AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
-                            if case .success(let img) = phase {
-                                img.resizable().aspectRatio(contentMode: .fill)
-                            } else {
-                                Circle().fill(Color.blue)
-                            }
-                        }
-                        .frame(width: 32, height: 32)
-                        .clipShape(Circle())
+                // Precio
+                Text(product.formattedPrice)
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundColor(.white)
 
-                        Text(sponsorName.uppercased())
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.7))
-                            .kerning(1)
+                // Botón
+                Button(action: onAddToCart) {
+                    HStack {
+                        Spacer()
+                        Text("Legg i handlekurv →")
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundColor(.black)
+                        Spacer()
                     }
-
-                    // Nombre producto
-                    Text(product.name)
-                        .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(.white)
-                        .lineLimit(3)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Spacer()
-
-                    // Precio tachado (compareAt) si existe
-                    if let compareAt = product.price?.compareAtAmount, compareAt > 0 {
-                        Text(formatPrice(compareAt))
-                            .font(.system(size: 18))
-                            .foregroundColor(.white.opacity(0.45))
-                            .strikethrough(true, color: .white.opacity(0.45))
-                    }
-
-                    // Precio final
-                    Text(product.formattedPrice)
-                        .font(.system(size: 32, weight: .bold))
-                        .foregroundColor(.white)
+                    .padding(.vertical, 14)
+                    .background(isAddToCartFocused ? Color.white : Color.white.opacity(0.88))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isAddToCartFocused ? Color.white : Color.clear, lineWidth: 2)
+                    )
+                    .scaleEffect(isAddToCartFocused ? 1.03 : 1.0)
+                    .animation(.spring(response: 0.2), value: isAddToCartFocused)
                 }
-                .padding(.leading, 20)
-                .padding(.trailing, 24)
-                .padding(.top, 16)
-                .frame(width: 280)
+                .buttonStyle(.plain)
+                .focused($isAddToCartFocused)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        isAddToCartFocused = true
+                    }
+                }
             }
-            .padding(.top, 20)
             .padding(.leading, 20)
-
-            // BOTTOM — botón full width
-            Button(action: onAddToCart) {
-                HStack {
-                    Spacer()
-                    Text("Legg i handlekurv →")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(isAddToCartFocused ? .black : .black)
-                    Spacer()
-                }
-                .padding(.vertical, 18)
-                .background(isAddToCartFocused ? Color.white : Color.white.opacity(0.92))
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .scaleEffect(isAddToCartFocused ? 1.02 : 1.0)
-                .animation(.spring(response: 0.2), value: isAddToCartFocused)
-            }
-            .buttonStyle(.plain)
-            .focused($isAddToCartFocused)
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 20)
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    isAddToCartFocused = true
-                }
-            }
+            .padding(.trailing, 24)
+            .frame(width: 280)
         }
-        .frame(width: 520)
+        .padding(.vertical, 20)
         .background(
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 20)
                 .fill(cardBg)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 20)
                 .stroke(Color.white.opacity(0.08), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.7), radius: 30, x: 0, y: 10)
         .focusSection()
-    }
-
-    private func formatPrice(_ value: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = " "
-        formatter.maximumFractionDigits = 0
-        return "kr \(formatter.string(from: NSNumber(value: value)) ?? "\(Int(value))"),-"
     }
 }
