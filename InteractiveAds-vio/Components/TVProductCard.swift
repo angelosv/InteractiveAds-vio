@@ -6,7 +6,14 @@ struct TVProductCard: View {
     let sponsor: TVSponsor
 
     @State private var appeared = false
+    @State private var isLoading = false
+    @State private var sentToPhone = false
     @FocusState private var isFocused: Bool
+
+    private let userId = "angelo_demo_001"
+    private let apiKey = "tv2_api_key_91b4fbf634af4bc5"
+    private let backendUrl = "https://api-dev.vio.live"
+    private let campaignId = 36
 
     var body: some View {
         HStack(spacing: 0) {
@@ -45,18 +52,31 @@ struct TVProductCard: View {
                     .foregroundColor(.yellow)
 
                 // CTA
-                Button(action: {}) {
-                    Text("Se mer →")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(isFocused ? .black : .white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(isFocused ? Color.yellow : Color.white.opacity(0.15))
-                        .clipShape(Capsule())
-                        .scaleEffect(isFocused ? 1.05 : 1.0)
-                        .animation(.spring(response: 0.25), value: isFocused)
+                Button(action: addToCart) {
+                    Group {
+                        if sentToPhone {
+                            Label("Sendt til din mobil", systemImage: "checkmark.circle.fill")
+                                .foregroundColor(.white)
+                        } else if isLoading {
+                            ProgressView().tint(.white)
+                        } else {
+                            Text("Legg i handlekurv")
+                                .foregroundColor(isFocused ? .black : .white)
+                        }
+                    }
+                    .font(.system(size: 14, weight: .semibold))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        sentToPhone ? Color.green :
+                        isFocused ? Color.yellow : Color.white.opacity(0.15)
+                    )
+                    .clipShape(Capsule())
+                    .scaleEffect(isFocused ? 1.05 : 1.0)
+                    .animation(.spring(response: 0.25), value: isFocused)
                 }
                 .focused($isFocused)
+                .disabled(isLoading || sentToPhone)
             }
             .padding(16)
         }

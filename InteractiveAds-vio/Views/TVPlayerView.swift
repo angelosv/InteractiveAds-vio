@@ -61,6 +61,11 @@ struct TVPlayerView: View {
                     .padding(.bottom, 80)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .tvCartIntentSent)) { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                withAnimation { showCard = false }
+            }
+        }
         .onReceive(wsManager.$lastShoppableAd) { event in
             guard let event = event else { return }
             let productId = event.product?.id ?? products.first?.id ?? "408895"
