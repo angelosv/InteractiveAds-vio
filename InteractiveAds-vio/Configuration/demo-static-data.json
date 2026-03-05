@@ -14,18 +14,18 @@
   },
   "demoProducts": [
     {
+      "id": "408898",
+      "name": "Nike Norge Fotballdrakt 2026 Hjemme",
+      "price": 999,
+      "currency": "NOK",
+      "imageUrl": "https://containerqa.reachu.io/reachu-uploads-qa/product-images/408898-5b680cc6-cc20-4708-bc37-fc9b387b70cb.jpeg?size=large"
+    },
+    {
       "id": "408895",
       "name": "Samsung 85\" Neo QLED 4K TV",
       "price": 17990,
       "currency": "NOK",
       "imageUrl": "https://assets.elko.no/image/image/media/catalog/product/S/a/Samsung_QN85D_TV_3.jpg"
-    },
-    {
-      "id": "408896",
-      "name": "Samsung Soundbar HW-S710D",
-      "price": 6999,
-      "currency": "NOK",
-      "imageUrl": "https://assets.elko.no/image/image/media/catalog/product/H/W/HW-S710D_001_Front_Black.jpg"
     }
   ]
 }

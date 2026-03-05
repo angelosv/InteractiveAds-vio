@@ -10,9 +10,9 @@ class VioCommerceService {
         let query = """
         {
           Channel {
-            GetProductById(id: "\(id)", countryCode: "NO", currencyCode: "NOK") {
+            GetProductsByIds(product_ids: [\(id)]) {
               id
-              name
+              title
               images { url order }
               price {
                 amount
@@ -36,7 +36,7 @@ class VioCommerceService {
             print("❌ [Commerce] Failed to fetch product \(id)")
             return nil
         }
-        return json.data?.channel?.getProductById
+        return json.data?.channel?.getProductsByIds?.first
     }
 }
 
@@ -57,7 +57,8 @@ struct CommerceChannelData: Codable {
 
 struct CommerceProduct: Codable {
     let id: String
-    let name: String
+    let title: String
+    var name: String { title }
     let images: [CommerceImage]?
     let price: CommercePrice?
 
