@@ -2,7 +2,8 @@ import SwiftUI
 
 struct TVPlayerView: View {
     @StateObject private var videoViewModel = VideoPlayerViewModel()
-    @State private var showShoppableCard = true
+    @StateObject private var wsManager = VioTVWebSocketManager.shared
+    @State private var showShoppableCard = false
     @State private var commerceProduct: CommerceProduct?
 
     var body: some View {
@@ -44,7 +45,19 @@ struct TVPlayerView: View {
             }
         }
         .onAppear {
-            loadProduct()
+            let config = VioTVConfigLoader.shared.config!
+            wsManager.connect(to: config.webSocketUrl)
+        }
+        .onReceive(wsManager.$lastShoppableAd) { event in
+            guard let event = event, let productId = event.product?.id else { return }
+            Task {
+                if let fetched = await VioCommerceService.shared.fetchProduct(id: productId) {
+                    await MainActor.run {
+                        commerceProduct = fetched
+                        withAnimation { showShoppableCard = true }
+                    }
+                }
+            }
         }
     }
 
