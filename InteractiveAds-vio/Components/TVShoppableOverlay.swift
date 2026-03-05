@@ -19,13 +19,6 @@ struct TVShoppableOverlay: View {
     }
 }
 
-struct TVRawButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-    }
-}
-
 struct TVShoppableProductCard: View {
     let product: CommerceProduct
     let onAddToCart: () -> Void
@@ -97,35 +90,37 @@ struct TVShoppableProductCard: View {
             }
             .padding(16)
 
-            // ── Botón full width ──
-            Button(action: onAddToCart) {
-                HStack(spacing: 8) {
-                    Spacer()
-                    Text("Legg i handlekurv")
-                        .font(.system(size: 16, weight: .bold))
-                    Image(systemName: "cart.fill")
-                        .font(.system(size: 14))
-                    Spacer()
-                }
-                .foregroundColor(.white)
-                .padding(.vertical, 14)
-                .frame(maxWidth: .infinity)
-                .background(blue)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            // Botón visual — no es Button, no tiene halo tvOS
+            HStack(spacing: 8) {
+                Spacer()
+                Text("Legg i handlekurv")
+                    .font(.system(size: 16, weight: .bold))
+                Image(systemName: "cart.fill")
+                    .font(.system(size: 14))
+                Spacer()
             }
-            .buttonStyle(TVRawButtonStyle())
-            .focused($focused)
+            .foregroundColor(.white)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity)
+            .background(focused ? blue : blue.opacity(0.9))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal, 14)
             .padding(.bottom, 14)
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focused = true }
-            }
         }
         .frame(width: 380)
         .background(bg)
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08), lineWidth: 1))
         .shadow(color: Color.black.opacity(0.6), radius: 28, x: 0, y: 8)
-        .focusSection()
+        // Card entera es focusable — no Button = no halo blanco tvOS
+        .focusable(true)
+        .focused($focused)
+        .focusEffectDisabled()
+        .scaleEffect(focused ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 0.15), value: focused)
+        .onTapGesture { onAddToCart() }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focused = true }
+        }
     }
 }
