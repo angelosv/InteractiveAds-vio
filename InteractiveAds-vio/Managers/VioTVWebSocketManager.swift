@@ -7,21 +7,39 @@ class VioTVWebSocketManager: ObservableObject {
     @Published var lastShoppableAd: ShoppableAdEvent? = nil
 
     private var webSocketTask: URLSessionWebSocketTask?
-    private var isConnected = false
+    private var currentUrlString: String?
+    private var reconnectTask: Task<Void, Never>?
 
     func connect(to urlString: String) {
+        currentUrlString = urlString
+        openConnection(to: urlString)
+    }
+
+    private func openConnection(to urlString: String) {
         guard let url = URL(string: urlString) else { return }
+        webSocketTask?.cancel(with: .normalClosure, reason: nil)
         let session = URLSession(configuration: .default)
         webSocketTask = session.webSocketTask(with: url)
         webSocketTask?.resume()
-        isConnected = true
         print("🔌 [VioTV] WebSocket conectado a \(urlString)")
         receiveMessages()
     }
 
     func disconnect() {
+        reconnectTask?.cancel()
         webSocketTask?.cancel(with: .normalClosure, reason: nil)
-        isConnected = false
+        currentUrlString = nil
+    }
+
+    private func scheduleReconnect() {
+        guard let url = currentUrlString else { return }
+        reconnectTask?.cancel()
+        reconnectTask = Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000) // 3s
+            guard !Task.isCancelled else { return }
+            print("🔄 [VioTV] Reconectando WS...")
+            openConnection(to: url)
+        }
     }
 
     private func receiveMessages() {
@@ -47,15 +65,13 @@ class VioTVWebSocketManager: ObservableObject {
                 self?.receiveMessages()
             case .failure(let error):
                 print("❌ [VioTV] WS error: \(error)")
+                self?.scheduleReconnect()
             }
         }
     }
 
-    /// Simula un evento shoppable_ad localmente (para demo sin backend)
     func simulateShoppableAd(product: TVProduct, sponsor: TVSponsor) {
         let event = ShoppableAdEvent(type: "shoppable_ad", product: product, sponsor: sponsor)
-        DispatchQueue.main.async {
-            self.lastShoppableAd = event
-        }
+        DispatchQueue.main.async { self.lastShoppableAd = event }
     }
 }
