@@ -10,7 +10,7 @@ class VioCommerceService {
         let query = """
         {
           Channel {
-            GetProductsByIds(product_ids: [\(id)]) {
+            GetProductsByIds(product_ids: ["\(id)"]) {
               id
               title
               images { url order }
@@ -52,7 +52,11 @@ struct CommerceData: Codable {
 
 struct CommerceChannelData: Codable {
     let getProductById: CommerceProduct?
-    enum CodingKeys: String, CodingKey { case getProductById = "GetProductById" }
+    let getProductsByIds: [CommerceProduct]?
+    enum CodingKeys: String, CodingKey {
+        case getProductById = "GetProductById"
+        case getProductsByIds = "GetProductsByIds"
+    }
 }
 
 struct CommerceProduct: Codable {
@@ -83,4 +87,9 @@ struct CommercePrice: Codable {
     let amount: Double
     let amount_incl_taxes: Double?
     let currency_code: String
+    let compareAtAmount: Double?
+    enum CodingKeys: String, CodingKey {
+        case amount, amount_incl_taxes, currency_code
+        case compareAtAmount = "compare_at_amount"
+    }
 }

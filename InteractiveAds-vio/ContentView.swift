@@ -6,12 +6,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if loaded {
-                let data = VioTVConfigLoader.shared.staticData!
-                TVPlayerView(
-                    match: data.match,
-                    sponsor: data.sponsor,
-                    products: data.demoProducts
-                )
+                TVPlayerView()
             } else {
                 ProgressView("Cargando Vio TV...")
                     .foregroundColor(.white)

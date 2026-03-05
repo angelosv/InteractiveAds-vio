@@ -66,3 +66,7 @@ struct ShoppableAdEvent: Codable {
     let product: TVProduct?
     let sponsor: TVSponsor?
 }
+
+extension Notification.Name {
+    static let tvCartIntentSent = Notification.Name("tvCartIntentSent")
+}

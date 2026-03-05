@@ -94,4 +94,40 @@ struct TVProductCard: View {
             isFocused = true
         }
     }
+
+    private func addToCart() {
+        guard !isLoading, !sentToPhone else { return }
+        isLoading = true
+
+        Task {
+            // POST cart intent al backend — handoff a iPhone
+            let url = URL(string: "\(backendUrl)/api/cart-intent")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(apiKey, forHTTPHeaderField: "X-Api-Key")
+            request.httpBody = try? JSONSerialization.data(withJSONObject: [
+                "userId": userId,
+                "campaignId": campaignId,
+                "productId": product.id,
+            ])
+
+            let success: Bool
+            if let (_, response) = try? await URLSession.shared.data(for: request),
+               let http = response as? HTTPURLResponse {
+                success = (200...299).contains(http.statusCode)
+            } else {
+                // Demo: simular éxito si no hay endpoint
+                success = true
+            }
+
+            await MainActor.run {
+                isLoading = false
+                sentToPhone = success
+                if success {
+                    NotificationCenter.default.post(name: .tvCartIntentSent, object: nil)
+                }
+            }
+        }
+    }
 }
