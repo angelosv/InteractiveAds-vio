@@ -45,7 +45,7 @@ struct TVShoppableProductCard: View {
                         Rectangle().fill(Color.white.opacity(0.06))
                     }
                 }
-                .frame(width: 180, height: 200)
+                .frame(width: 160, height: 170)
                 .clipped()
                 .clipShape(RoundedRectangle(cornerRadius: 14))
 
@@ -63,7 +63,7 @@ struct TVShoppableProductCard: View {
             .padding(.vertical, 20)
 
             // — Info —
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
 
                 // Sponsor
                 HStack(spacing: 8) {
@@ -85,14 +85,14 @@ struct TVShoppableProductCard: View {
 
                 // Nombre
                 Text(product.name)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
 
                 // Precio
                 Text(product.formattedPrice)
-                    .font(.system(size: 28, weight: .heavy))
+                    .font(.system(size: 22, weight: .heavy))
                     .foregroundColor(.white)
 
 
@@ -101,9 +101,9 @@ struct TVShoppableProductCard: View {
                     HStack(spacing: 10) {
                         Spacer()
                         Text("Legg i handlekurv")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: 15, weight: .bold))
                         Image(systemName: "cart.fill")
-                            .font(.system(size: 16))
+                            .font(.system(size: 13))
                         Spacer()
                     }
                     .foregroundColor(focused ? .white : .white)
@@ -129,7 +129,7 @@ struct TVShoppableProductCard: View {
             .padding(.trailing, 24)
             .padding(.top, 20)
             .padding(.bottom, 20)
-            .frame(width: 300)
+            .frame(width: 270, height: 170)
         }
         .background(cardBg)
         .clipShape(RoundedRectangle(cornerRadius: 20))
