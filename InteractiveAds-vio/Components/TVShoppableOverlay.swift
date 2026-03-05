@@ -41,6 +41,7 @@ struct TVShoppableProductCard: View {
     }
 
     var body: some View {
+        Button(action: handleTap) {
         VStack(alignment: .leading, spacing: 0) {
 
             // ── Imagen + info ──
