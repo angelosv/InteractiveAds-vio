@@ -32,9 +32,9 @@ struct TVShoppableProductCard: View {
 
     private let sponsorLogoUrl = "https://api-dev.vio.live/objects/uploads/e166816b-48e8-4e9f-98fa-53d164a2ab6f"
     private let sponsorName = "TORSHOV SPORT"
+    private let accentColor = Color(red: 67/255, green: 2/255, blue: 1)
     private let accentBlue = Color(red: 0.23, green: 0.51, blue: 0.96)
     private let cardBg = Color(red: 0.08, green: 0.07, blue: 0.12)
-    private let accentColor = Color(red: 67/255, green: 2/255, blue: 1)
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
@@ -47,9 +47,9 @@ struct TVShoppableProductCard: View {
                         Rectangle().fill(Color.white.opacity(0.06))
                     }
                 }
-                .frame(width: 180, height: 200)
+                .frame(width: 160, height: 170)
                 .clipped()
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .clipShape(RoundedRectangle(cornerRadius: 14))
 
                 Text("NEW")
                     .font(.system(size: 14, weight: .black))
@@ -63,7 +63,7 @@ struct TVShoppableProductCard: View {
             .padding(.leading, 20)
             .padding(.vertical, 20)
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
 
                 HStack(spacing: 8) {
                     AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
@@ -73,7 +73,7 @@ struct TVShoppableProductCard: View {
                             Circle().fill(accentBlue)
                         }
                     }
-                    .frame(width: 26, height: 26)
+                    .frame(width: 28, height: 28)
                     .clipShape(Circle())
 
                     Text(sponsorName)
@@ -83,39 +83,37 @@ struct TVShoppableProductCard: View {
                 }
 
                 Text(product.name)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, 4)
 
                 Text(product.formattedPrice)
-                    .font(.system(size: 28, weight: .heavy))
+                    .font(.system(size: 22, weight: .heavy))
                     .foregroundColor(.white)
-                    .padding(.top, 2)
-
 
                 ZStack {
                     HStack(spacing: 10) {
+                        Spacer()
                         Text("Legg i handlekurv")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: 15, weight: .bold))
                         Image(systemName: "cart.fill")
-                            .font(.system(size: 16))
+                            .font(.system(size: 13))
+                        Spacer()
                     }
                     .foregroundColor(.white)
                     .opacity(showSuccess ? 0 : 1)
 
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 20, weight: .bold))
-                        Text("Lagt til!")
                             .font(.system(size: 18, weight: .bold))
+                        Text("Lagt til!")
+                            .font(.system(size: 15, weight: .bold))
                     }
                     .foregroundColor(.white)
                     .opacity(showSuccess ? 1 : 0)
                     .scaleEffect(showSuccess ? 1 : 0.5)
                 }
-                .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
@@ -137,7 +135,7 @@ struct TVShoppableProductCard: View {
             .padding(.trailing, 24)
             .padding(.top, 20)
             .padding(.bottom, 20)
-            .frame(width: 300)
+            .frame(width: 270, height: 170)
         }
         .background(cardBg)
         .clipShape(RoundedRectangle(cornerRadius: 20))
