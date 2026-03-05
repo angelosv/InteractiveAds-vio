@@ -28,13 +28,20 @@ class VioTVWebSocketManager: ObservableObject {
         webSocketTask?.receive { [weak self] result in
             switch result {
             case .success(let message):
-                if case .string(let text) = message,
-                   let data = text.data(using: .utf8),
-                   let event = try? JSONDecoder().decode(ShoppableAdEvent.self, from: data),
-                   event.type == "shoppable_ad" {
-                    DispatchQueue.main.async {
-                        self?.lastShoppableAd = event
-                        print("📺 [VioTV] shoppable_ad recibido: \(event.product?.name ?? "?")")
+                if case .string(let text) = message {
+                    print("📡 [VioTV] WS raw: \(text.prefix(200))")
+                    if let data = text.data(using: .utf8) {
+                        do {
+                            let event = try JSONDecoder().decode(ShoppableAdEvent.self, from: data)
+                            if event.type == "shoppable_ad" {
+                                DispatchQueue.main.async {
+                                    self?.lastShoppableAd = event
+                                    print("📺 [VioTV] shoppable_ad OK: \(event.product?.name ?? "?")")
+                                }
+                            }
+                        } catch {
+                            print("❌ [VioTV] decode error: \(error)")
+                        }
                     }
                 }
                 self?.receiveMessages()
