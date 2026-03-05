@@ -27,16 +27,19 @@ struct TVShoppableProductCard: View {
     let onAddToCart: () -> Void
     let onDismiss: () -> Void
 
-    @FocusState private var isAddToCartFocused: Bool
+    @FocusState private var isButtonFocused: Bool
+    @State private var showSuccess = false
 
     private let sponsorLogoUrl = "https://api-dev.vio.live/objects/uploads/e166816b-48e8-4e9f-98fa-53d164a2ab6f"
     private let sponsorName = "Torshov Sport"
-    private let cardBg = Color(red: 0.09, green: 0.08, blue: 0.13)
+    private let cardBg = Color(red: 0.09, green: 0.08, blue: 0.13).opacity(0.75)
+    private let accentColor = Color(red: 67/255, green: 2/255, blue: 1)
+
+    private let imageSize: CGFloat = 220
 
     var body: some View {
-        HStack(alignment: .center, spacing: 0) {
+        HStack(alignment: .top, spacing: 20) {
 
-            // Imagen producto
             ZStack(alignment: .topLeading) {
                 AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
                     if case .success(let img) = phase {
@@ -45,9 +48,9 @@ struct TVShoppableProductCard: View {
                         Rectangle().fill(Color.white.opacity(0.06))
                     }
                 }
-                .frame(width: 160, height: 160)
+                .frame(width: imageSize, height: imageSize)
                 .clipped()
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
 
                 Text("NEW")
                     .font(.system(size: 13, weight: .bold))
@@ -58,12 +61,9 @@ struct TVShoppableProductCard: View {
                     .clipShape(Capsule())
                     .padding(10)
             }
-            .padding(.leading, 20)
+            .frame(width: imageSize, height: imageSize)
 
-            // Info
-            VStack(alignment: .leading, spacing: 10) {
-
-                // Sponsor
+            VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
                     AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
                         if case .success(let img) = phase {
@@ -72,7 +72,7 @@ struct TVShoppableProductCard: View {
                             Circle().fill(Color.blue)
                         }
                     }
-                    .frame(width: 28, height: 28)
+                    .frame(width: 26, height: 26)
                     .clipShape(Circle())
 
                     Text(sponsorName.uppercased())
@@ -81,59 +81,89 @@ struct TVShoppableProductCard: View {
                         .kerning(0.8)
                 }
 
-                // Nombre
                 Text(product.name)
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
 
-                // Precio
                 Text(product.formattedPrice)
-                    .font(.system(size: 26, weight: .bold))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.white)
+                    .padding(.top, 2)
 
-                // Botón
-                Button(action: onAddToCart) {
-                    HStack {
-                        Spacer()
-                        Text("Legg i handlekurv →")
-                            .font(.system(size: 17, weight: .bold))
-                            .foregroundColor(.black)
-                        Spacer()
+                Spacer(minLength: 0)
+
+                // Botón custom sin .buttonStyle — evita el foco blanco nativo de tvOS
+                ZStack {
+                    HStack(spacing: 8) {
+                        Text("Legg i handlekurv")
+                        Image(systemName: "cart.fill")
                     }
-                    .padding(.vertical, 14)
-                    .background(isAddToCartFocused ? Color.white : Color.white.opacity(0.88))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(isAddToCartFocused ? Color.white : Color.clear, lineWidth: 2)
-                    )
-                    .scaleEffect(isAddToCartFocused ? 1.03 : 1.0)
-                    .animation(.spring(response: 0.2), value: isAddToCartFocused)
-                }
-                .buttonStyle(.plain)
-                .focused($isAddToCartFocused)
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        isAddToCartFocused = true
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                    .opacity(showSuccess ? 0 : 1)
+
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 20, weight: .bold))
+                        Text("Lagt til!")
+                            .font(.system(size: 16, weight: .bold))
                     }
+                    .foregroundColor(.white)
+                    .opacity(showSuccess ? 1 : 0)
+                    .scaleEffect(showSuccess ? 1 : 0.5)
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(showSuccess ? Color(red: 0.15, green: 0.7, blue: 0.35) : accentColor)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(isButtonFocused ? Color.white.opacity(0.6) : Color.clear, lineWidth: 2)
+                )
+                .focusable(true)
+                .focused($isButtonFocused)
+                .onLongPressGesture(minimumDuration: 0.01) {
+                    handleTap()
+                }
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: showSuccess)
+                .animation(.easeInOut(duration: 0.15), value: isButtonFocused)
             }
-            .padding(.leading, 20)
-            .padding(.trailing, 24)
-            .frame(width: 280)
+            .frame(width: 250, height: imageSize)
         }
-        .padding(.vertical, 20)
+        .padding(28)
+        .clipShape(RoundedRectangle(cornerRadius: 22))
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(cardBg)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            ZStack {
+                RoundedRectangle(cornerRadius: 22)
+                    .fill(.ultraThinMaterial)
+                RoundedRectangle(cornerRadius: 22)
+                    .fill(cardBg)
+            }
         )
         .shadow(color: .black.opacity(0.7), radius: 30, x: 0, y: 10)
         .focusSection()
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                isButtonFocused = true
+            }
+        }
+    }
+
+    private func handleTap() {
+        guard !showSuccess else { return }
+        onAddToCart()
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
+            showSuccess = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+            withAnimation(.easeOut(duration: 0.25)) {
+                showSuccess = false
+            }
+        }
     }
 }

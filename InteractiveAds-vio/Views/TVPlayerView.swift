@@ -5,6 +5,7 @@ struct TVPlayerView: View {
     @StateObject private var wsManager = VioTVWebSocketManager.shared
     @State private var showShoppableCard = false
     @State private var commerceProduct: CommerceProduct?
+    @State private var dismissWorkItem: DispatchWorkItem?
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -26,8 +27,12 @@ struct TVPlayerView: View {
                     TVShoppableOverlay(
                         product: product,
                         onAddToCart: { sendCartIntent(productId: product.id) },
-                        onDismiss: { showShoppableCard = false }
+                        onDismiss: { withAnimation(.easeOut(duration: 0.35)) { showShoppableCard = false } }
                     )
+                    .transition(.asymmetric(
+                        insertion: .opacity.combined(with: .move(edge: .bottom)),
+                        removal: .opacity.combined(with: .move(edge: .bottom))
+                    ))
                 }
             } else {
                 // Fallback gradient if video fails
@@ -40,6 +45,7 @@ struct TVPlayerView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .tvCartIntentSent)) { _ in
+            dismissWorkItem?.cancel()
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 withAnimation { showShoppableCard = false }
             }
@@ -66,11 +72,19 @@ struct TVPlayerView: View {
             ]
             if let data = try? JSONSerialization.data(withJSONObject: dict),
                let product = try? JSONDecoder().decode(CommerceProduct.self, from: data) {
+                dismissWorkItem?.cancel()
                 commerceProduct = product
-                withAnimation { showShoppableCard = true }
+                withAnimation(.easeOut(duration: 0.4)) { showShoppableCard = true }
                 print("✅ [VioTV] Mostrando card: \(product.name)")
+                // Desaparece automáticamente tras 15 segundos
+                let work = DispatchWorkItem {
+                    withAnimation(.easeIn(duration: 0.35)) { showShoppableCard = false }
+                }
+                dismissWorkItem = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 15, execute: work)
             }
         }
+        .animation(.easeInOut(duration: 0.4), value: showShoppableCard)
     }
 
     private func loadProduct() {
