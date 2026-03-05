@@ -97,8 +97,9 @@ struct TVShoppableProductCard: View {
                 .fill(Color.white.opacity(0.06))
                 .frame(height: 1)
 
-            // ── BOTÓN — dentro del clip de la card ──
-            Button(action: onAddToCart) {
+            // ── BOTÓN — ZStack focusable, sin Button → sin halo tvOS ──
+            ZStack {
+                (focused ? blue : blue.opacity(0.8))
                 HStack(spacing: 8) {
                     Spacer()
                     Image(systemName: "cart.fill")
@@ -109,13 +110,14 @@ struct TVShoppableProductCard: View {
                     Spacer()
                 }
                 .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
-                .background(focused ? blue : blue.opacity(0.8))
             }
-            .buttonStyle(.plain)
-            .focusEffectDisabled()        // ← elimina halo blanco tvOS
+            .frame(maxWidth: .infinity)
+            .focusable(true)
             .focused($focused)
+            .onTapGesture { onAddToCart() }
+            .scaleEffect(focused ? 1.02 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: focused)
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focused = true }
             }
