@@ -63,7 +63,7 @@ struct TVShoppableProductCard: View {
                     .padding(12)
             }
             .padding(.leading, 20)
-            .padding(.vertical, 20)
+            .padding(.vertical, 16)
 
             // — Info —
             VStack(alignment: .leading, spacing: 8) {
@@ -129,9 +129,8 @@ struct TVShoppableProductCard: View {
             }
             .padding(.leading, 20)
             .padding(.trailing, 24)
-            .padding(.top, 20)
-            .padding(.bottom, 20)
-            .frame(width: 270, height: 170)
+            .padding(.vertical, 16)
+            .frame(width: 270)
         }
         .background(cardBg)
         .clipShape(RoundedRectangle(cornerRadius: 20))
