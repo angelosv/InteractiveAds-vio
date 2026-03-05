@@ -111,7 +111,15 @@ struct TVPlayerView: View {
             "productId": productId,
         ])
         Task {
-            _ = try? await URLSession.shared.data(for: request)
+            print("🛒 [CartIntent] POST a \(url)")
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+                let body = String(data: data, encoding: .utf8) ?? ""
+                print("🛒 [CartIntent] respuesta \(status): \(body.prefix(200))")
+            } catch {
+                print("❌ [CartIntent] error: \(error)")
+            }
             await MainActor.run {
                 NotificationCenter.default.post(name: .tvCartIntentSent, object: nil)
             }
