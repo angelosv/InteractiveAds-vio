@@ -55,14 +55,20 @@ struct TVPlayerView: View {
             wsManager.connect(to: config.webSocketUrl)
         }
         .onReceive(wsManager.$lastShoppableAd) { event in
-            guard let event = event, let productId = event.product?.id else { return }
-            Task {
-                if let fetched = await VioCommerceService.shared.fetchProduct(id: productId) {
-                    await MainActor.run {
-                        commerceProduct = fetched
-                        withAnimation { showShoppableCard = true }
-                    }
-                }
+            guard let event = event, let tvProduct = event.product else { return }
+            // Usar los datos del WS directamente (ya resueltos por el backend)
+            // Construimos via JSON para evitar problemas con custom init
+            let dict: [String: Any] = [
+                "id": tvProduct.id,
+                "title": tvProduct.name,
+                "images": tvProduct.imageUrl.map { [["url": $0, "order": 0]] } ?? [],
+                "price": ["amount": tvProduct.price, "amount_incl_taxes": tvProduct.price, "currency_code": tvProduct.currency]
+            ]
+            if let data = try? JSONSerialization.data(withJSONObject: dict),
+               let product = try? JSONDecoder().decode(CommerceProduct.self, from: data) {
+                commerceProduct = product
+                withAnimation { showShoppableCard = true }
+                print("✅ [VioTV] Mostrando card: \(product.name)")
             }
         }
     }
