@@ -27,17 +27,14 @@ struct TVShoppableProductCard: View {
     @FocusState private var focused: Bool
 
     private let sponsorLogoUrl = "https://api-dev.vio.live/objects/uploads/e166816b-48e8-4e9f-98fa-53d164a2ab6f"
-    // Colores con valores decimales explícitos — evita división entera en Swift
-    private let blue = Color(red: 0.231, green: 0.510, blue: 0.965)   // #3B82F6
-    private let bg   = Color(red: 0.071, green: 0.063, blue: 0.110)   // #12101C
+    private let blue = Color(red: 0.231, green: 0.510, blue: 0.965)
+    private let bg   = Color(red: 0.071, green: 0.063, blue: 0.110)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
 
-            // ── TOP ─────────────────────────────────
+            // ── Imagen + info ──────────────────────
             HStack(alignment: .center, spacing: 14) {
-
-                // Imagen + badge
                 ZStack(alignment: .topLeading) {
                     AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
                         if case .success(let img) = phase {
@@ -54,20 +51,17 @@ struct TVShoppableProductCard: View {
                         .font(.system(size: 11, weight: .black))
                         .foregroundColor(.white)
                         .padding(.horizontal, 9).padding(.vertical, 3)
-                        .background(Color(red: 0.863, green: 0.149, blue: 0.149)) // #DC2626
+                        .background(Color(red: 0.863, green: 0.149, blue: 0.149))
                         .clipShape(Capsule())
                         .padding(8)
                 }
 
-                // Info
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
                         AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
                             if case .success(let img) = phase {
                                 img.resizable().aspectRatio(contentMode: .fill)
-                            } else {
-                                Circle().fill(blue)
-                            }
+                            } else { Circle().fill(blue) }
                         }
                         .frame(width: 20, height: 20)
                         .clipShape(Circle())
@@ -88,7 +82,7 @@ struct TVShoppableProductCard: View {
                         .font(.system(size: 22, weight: .heavy))
                         .foregroundColor(.white)
                 }
-                .frame(width: 230, alignment: .leading)
+                .frame(width: 220, alignment: .leading)
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)
@@ -99,36 +93,33 @@ struct TVShoppableProductCard: View {
                 .fill(Color.white.opacity(0.06))
                 .frame(height: 1)
 
-            // ── BOTÓN ─────────────────────────────────
-            ZStack {
-                focused ? blue : blue.opacity(0.85)
-                HStack(spacing: 8) {
-                    Spacer()
-                    Image(systemName: "cart.fill")
-                        .font(.system(size: 14))
-                    Text("Legg i handlekurv")
-                        .font(.system(size: 16, weight: .bold))
-                        .lineLimit(1)
-                    Spacer()
-                }
-                .foregroundColor(.white)
-                .padding(.vertical, 14)
+            // ── Botón VISUAL (no focusable — la card entera es el target) ──
+            HStack(spacing: 8) {
+                Spacer()
+                Image(systemName: "cart.fill").font(.system(size: 14))
+                Text("Legg i handlekurv")
+                    .font(.system(size: 16, weight: .bold))
+                    .lineLimit(1)
+                Spacer()
             }
-            .frame(maxWidth: .infinity)
-            .focusable(true)
-            .focused($focused)
-            .onTapGesture { onAddToCart() }
-            .scaleEffect(focused ? 1.02 : 1.0)
-            .animation(.easeInOut(duration: 0.15), value: focused)
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focused = true }
-            }
+            .foregroundColor(.white)
+            .padding(.vertical, 14)
+            .background(focused ? blue : blue.opacity(0.85))
         }
         .frame(width: 400)
         .background(bg)
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.07), lineWidth: 1))
         .shadow(color: Color.black.opacity(0.7), radius: 32, x: 0, y: 12)
-        .focusSection()
+        // Card entera es el elemento focusable — el clip contiene todo el focus effect
+        .focusable(true)
+        .focused($focused)
+        .focusEffectDisabled()
+        .scaleEffect(focused ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 0.15), value: focused)
+        .onTapGesture { onAddToCart() }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focused = true }
+        }
     }
 }
