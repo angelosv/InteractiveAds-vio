@@ -1,5 +1,40 @@
 // ⚠️ VIOBOT-OWNED — Do not modify this file manually or via Cursor.
 import SwiftUI
+import UIKit
+
+// UIButton(type: .custom) = sin efecto blanco de tvOS
+struct TVCustomButton: UIViewRepresentable {
+    let title: String
+    let icon: String
+    let bgColor: UIColor
+    let action: () -> Void
+    @Binding var focused: Bool
+
+    func makeCoordinator() -> Coordinator { Coordinator(action: action) }
+
+    func makeUIView(context: Context) -> UIButton {
+        let btn = UIButton(type: .custom)
+        btn.setTitle("  \(title)", for: .normal)
+        btn.setImage(UIImage(systemName: icon), for: .normal)
+        btn.tintColor = .white
+        btn.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        btn.backgroundColor = bgColor
+        btn.layer.cornerRadius = 12
+        btn.contentEdgeInsets = UIEdgeInsets(top: 14, left: 0, bottom: 14, right: 0)
+        btn.addTarget(context.coordinator, action: #selector(Coordinator.tapped), for: .primaryActionTriggered)
+        return btn
+    }
+
+    func updateUIView(_ btn: UIButton, context: Context) {
+        btn.backgroundColor = focused ? bgColor : bgColor.withAlphaComponent(0.82)
+    }
+
+    class Coordinator: NSObject {
+        let action: () -> Void
+        init(action: @escaping () -> Void) { self.action = action }
+        @objc func tapped() { action() }
+    }
+}
 
 struct TVShoppableOverlay: View {
     let product: CommerceProduct
@@ -27,14 +62,15 @@ struct TVShoppableProductCard: View {
     @FocusState private var focused: Bool
 
     private let sponsorLogoUrl = "https://api-dev.vio.live/objects/uploads/e166816b-48e8-4e9f-98fa-53d164a2ab6f"
-    private let blue = Color(red: 0.231, green: 0.510, blue: 0.965)
-    private let bg   = Color(red: 0.071, green: 0.063, blue: 0.110)
+    private let blue    = Color(red: 0.231, green: 0.510, blue: 0.965)
+    private let blueUI  = UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
+    private let bg      = Color(red: 0.071, green: 0.063, blue: 0.110)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
 
-            // ── Imagen + info ──────────────────────
             HStack(alignment: .center, spacing: 14) {
+                // Imagen
                 ZStack(alignment: .topLeading) {
                     AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
                         if case .success(let img) = phase {
@@ -56,6 +92,7 @@ struct TVShoppableProductCard: View {
                         .padding(8)
                 }
 
+                // Info
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
                         AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
@@ -76,7 +113,6 @@ struct TVShoppableProductCard: View {
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(3)
-                        .fixedSize(horizontal: false, vertical: true)
 
                     Text(product.formattedPrice)
                         .font(.system(size: 22, weight: .heavy))
@@ -88,38 +124,29 @@ struct TVShoppableProductCard: View {
             .padding(.top, 16)
             .padding(.bottom, 12)
 
-            // Separador
             Rectangle()
                 .fill(Color.white.opacity(0.06))
                 .frame(height: 1)
 
-            // ── Botón VISUAL (no focusable — la card entera es el target) ──
-            HStack(spacing: 8) {
-                Spacer()
-                Image(systemName: "cart.fill").font(.system(size: 14))
-                Text("Legg i handlekurv")
-                    .font(.system(size: 16, weight: .bold))
-                    .lineLimit(1)
-                Spacer()
-            }
-            .foregroundColor(.white)
-            .padding(.vertical, 14)
-            .background(focused ? blue : blue.opacity(0.85))
+            // Botón UIKit — sin halo blanco tvOS
+            TVCustomButton(
+                title: "Legg i handlekurv",
+                icon: "cart.fill",
+                bgColor: blueUI,
+                action: onAddToCart,
+                focused: $focused
+            )
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .focused($focused)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
         }
         .frame(width: 400)
         .background(bg)
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.07), lineWidth: 1))
         .shadow(color: Color.black.opacity(0.7), radius: 32, x: 0, y: 12)
-        // Card entera es el elemento focusable — el clip contiene todo el focus effect
-        .focusable(true)
-        .focused($focused)
-        .focusEffectDisabled()
-        .scaleEffect(focused ? 1.02 : 1.0)
-        .animation(.easeInOut(duration: 0.15), value: focused)
-        .onTapGesture { onAddToCart() }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focused = true }
-        }
+        .focusSection()
     }
 }
