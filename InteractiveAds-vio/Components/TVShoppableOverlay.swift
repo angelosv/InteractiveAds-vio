@@ -25,10 +25,20 @@ struct TVShoppableProductCard: View {
     let onDismiss: () -> Void
 
     @FocusState private var focused: Bool
+    @State private var confirmed = false
 
     private let sponsorLogoUrl = "https://api-dev.vio.live/objects/uploads/e166816b-48e8-4e9f-98fa-53d164a2ab6f"
-    private let blue = Color(red: 0.231, green: 0.510, blue: 0.965)
-    private let bg   = Color(red: 0.071, green: 0.063, blue: 0.110)
+    private let purple = Color(red: 0.404, green: 0.008, blue: 1.0)  // #6702ff
+    private let bg     = Color(red: 0.071, green: 0.063, blue: 0.110)
+
+    private func handleTap() {
+        guard !confirmed else { return }
+        withAnimation(.spring(response: 0.3)) { confirmed = true }
+        onAddToCart()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            withAnimation { onDismiss() }
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -36,7 +46,7 @@ struct TVShoppableProductCard: View {
             // ── Imagen + info ──
             HStack(alignment: .center, spacing: 16) {
 
-                // Imagen producto + badge NEW
+                // Imagen
                 ZStack(alignment: .topLeading) {
                     AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
                         if case .success(let img) = phase {
@@ -58,22 +68,24 @@ struct TVShoppableProductCard: View {
                         .padding(8)
                 }
 
-                // Texto
-                VStack(alignment: .leading, spacing: 5) {
-                    HStack(spacing: 5) {
+                // Info
+                VStack(alignment: .leading, spacing: 6) {
+                    // Sponsor — avatar más grande + nombre más grande
+                    HStack(spacing: 8) {
                         AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
                             if case .success(let img) = phase {
                                 img.resizable().aspectRatio(contentMode: .fill)
                             } else {
-                                Circle().fill(blue)
+                                Circle().fill(purple)
                             }
                         }
-                        .frame(width: 18, height: 18)
+                        .frame(width: 32, height: 32)
                         .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 1))
 
                         Text("TORSHOV SPORT")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(Color.white.opacity(0.5))
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(Color.white.opacity(0.65))
                             .kerning(0.8)
                     }
 
@@ -90,35 +102,43 @@ struct TVShoppableProductCard: View {
             }
             .padding(16)
 
-            // Botón visual — no es Button, no tiene halo tvOS
-            HStack(spacing: 8) {
+            // ── Botón ──
+            HStack(spacing: 10) {
                 Spacer()
-                Text("Legg i handlekurv")
-                    .font(.system(size: 16, weight: .bold))
-                Image(systemName: "cart.fill")
-                    .font(.system(size: 14))
+                if confirmed {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 18, weight: .bold))
+                    Text("Sendt til din mobil!")
+                        .font(.system(size: 16, weight: .bold))
+                } else {
+                    Text("Legg i handlekurv")
+                        .font(.system(size: 16, weight: .bold))
+                    Image(systemName: "cart.fill")
+                        .font(.system(size: 14))
+                }
                 Spacer()
             }
             .foregroundColor(.white)
             .padding(.vertical, 14)
             .frame(maxWidth: .infinity)
-            .background(focused ? blue : blue.opacity(0.9))
+            .background(confirmed ? Color(red: 0.133, green: 0.545, blue: 0.133) : (focused ? purple : purple.opacity(0.85)))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal, 14)
             .padding(.bottom, 14)
+            .animation(.spring(response: 0.3), value: confirmed)
         }
         .frame(width: 380)
         .background(bg)
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08), lineWidth: 1))
         .shadow(color: Color.black.opacity(0.6), radius: 28, x: 0, y: 8)
-        // Card entera es focusable — no Button = no halo blanco tvOS
         .focusable(true)
         .focused($focused)
         .focusEffectDisabled()
         .scaleEffect(focused ? 1.02 : 1.0)
         .animation(.easeInOut(duration: 0.15), value: focused)
-        .onTapGesture { onAddToCart() }
+        .onTapGesture { handleTap() }
+        .onLongPressGesture(minimumDuration: 0.01) { handleTap() }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focused = true }
         }
