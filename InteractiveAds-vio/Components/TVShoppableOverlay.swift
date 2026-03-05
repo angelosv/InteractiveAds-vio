@@ -1,7 +1,5 @@
 import SwiftUI
 
-/// Overlay con product card shoppable — estilo referencia Vileda.
-/// Fondo #120019, texto blanco, etiquetas en noruego. Datos reales de Commerce API.
 struct TVShoppableOverlay: View {
     let product: CommerceProduct
     let onAddToCart: () -> Void
@@ -24,7 +22,6 @@ struct TVShoppableOverlay: View {
     }
 }
 
-/// Product card — fondo #120019, texto blanco, borde sutil. Datos reales de Commerce API.
 struct TVShoppableProductCard: View {
     let product: CommerceProduct
     let onAddToCart: () -> Void
@@ -32,20 +29,14 @@ struct TVShoppableProductCard: View {
 
     @FocusState private var isAddToCartFocused: Bool
 
-    private let cardBackground = Color(red: 18/255, green: 0/255, blue: 25/255)
-    private let accentYellow = Color(red: 0.85, green: 0.7, blue: 0.2)
-
-    private var originalPrice: Double? { product.price?.compareAtAmount }
-    private var discountPercent: Int? {
-        guard let orig = originalPrice, orig > 0,
-              let current = product.price?.amount_incl_taxes ?? product.price?.amount,
-              current < orig else { return nil }
-        return Int(round((1 - current / orig) * 100))
-    }
+    // Sponsor Torshov Sport
+    private let sponsorLogoUrl = "https://api-dev.vio.live/objects/uploads/e166816b-48e8-4e9f-98fa-53d164a2ab6f"
+    private let sponsorColor = Color(red: 0.23, green: 0.51, blue: 0.96) // #3b82f6
 
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            // Imagen producto — real desde Commerce API
+        HStack(alignment: .center, spacing: 20) {
+
+            // Imagen producto
             AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
                 if case .success(let img) = phase {
                     img.resizable().aspectRatio(contentMode: .fill)
@@ -55,96 +46,73 @@ struct TVShoppableProductCard: View {
                         .overlay(Image(systemName: "photo").foregroundColor(.white.opacity(0.3)))
                 }
             }
-            .frame(width: 100, height: 100)
+            .frame(width: 110, height: 110)
             .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            VStack(alignment: .leading, spacing: 12) {
-                // Nombre producto
-                HStack(alignment: .top, spacing: 8) {
-                    Image(systemName: "cart.fill")
-                        .font(.system(size: 16))
-                        .foregroundColor(.white)
-                        .frame(width: 28, height: 28)
-                        .background(accentYellow.opacity(0.9))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+            // Info
+            VStack(alignment: .leading, spacing: 10) {
+
+                // Sponsor avatar + nombre producto
+                HStack(alignment: .center, spacing: 10) {
+                    // Avatar circular sponsor
+                    AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
+                        if case .success(let img) = phase {
+                            img.resizable().aspectRatio(contentMode: .fill)
+                        } else {
+                            Circle().fill(sponsorColor)
+                                .overlay(Text("T").font(.caption).bold().foregroundColor(.white))
+                        }
+                    }
+                    .frame(width: 36, height: 36)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
 
                     Text(product.name)
-                        .font(.system(size: 18, weight: .medium))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(.white)
                         .lineLimit(2)
                 }
 
-                // Precio actual + descuento + recomendado (solo si hay datos reales)
-                HStack(alignment: .center, spacing: 8) {
-                    Text(product.formattedPrice)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
+                // Precio
+                Text(product.formattedPrice)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.white)
 
-                    if let discount = discountPercent {
-                        Text("-\(discount)%")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(accentYellow)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                    }
-
-                    if let orig = originalPrice {
-                        Text("Anbefalt: \(formatPrice(orig))")
-                            .font(.system(size: 14))
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                }
-
-                // Botón Add to cart — foco por defecto para mando Apple TV
+                // Botón Add to cart
                 Button(action: onAddToCart) {
                     Text("Legg i handlekurv")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(isAddToCartFocused ? .black : .white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(isAddToCartFocused ? Color.white : Color.white.opacity(0.2))
+                        .padding(.vertical, 13)
+                        .background(isAddToCartFocused ? Color.white : sponsorColor.opacity(0.7))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .scaleEffect(isAddToCartFocused ? 1.03 : 1.0)
+                        .animation(.spring(response: 0.2), value: isAddToCartFocused)
                 }
                 .buttonStyle(.plain)
                 .focused($isAddToCartFocused)
                 .onAppear {
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         isAddToCartFocused = true
                     }
                 }
-
-                // Link detalles
-                Button(action: onDismiss) {
-                    Text("Detaljer og levering")
-                        .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.7))
-                }
-                .buttonStyle(.plain)
             }
+            .frame(width: 260)
         }
-        .padding(20)
-        .frame(width: 380, alignment: .leading)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 20)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(cardBackground.opacity(0.95))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(red: 0.07, green: 0.0, blue: 0.1).opacity(0.85))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
         )
-        .shadow(color: .black.opacity(0.5), radius: 16, x: 0, y: 4)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.6), radius: 24, x: 0, y: 8)
         .focusSection()
-    }
-
-    private func formatPrice(_ value: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = "."
-        formatter.maximumFractionDigits = 0
-        let num = formatter.string(from: NSNumber(value: value)) ?? "\(Int(value))"
-        return "kr \(num),-"
     }
 }
