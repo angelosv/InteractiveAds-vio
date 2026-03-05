@@ -1,6 +1,5 @@
 // ⚠️ VIOBOT-OWNED — Do not modify this file manually or via Cursor.
 // All changes go through Viobot (OpenClaw) only.
-
 import SwiftUI
 
 struct TVShoppableOverlay: View {
@@ -37,7 +36,7 @@ struct TVShoppableProductCard: View {
     private let cardBg = Color(red: 0.08, green: 0.07, blue: 0.12)
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
+        HStack(alignment: .center, spacing: 0) {
 
             // — Imagen producto —
             ZStack(alignment: .topLeading) {
@@ -48,28 +47,27 @@ struct TVShoppableProductCard: View {
                         Rectangle().fill(Color.white.opacity(0.06))
                     }
                 }
-                .frame(width: 160, height: 170)
+                .frame(width: 130, height: 130)
                 .clipped()
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                // Badge NEW
                 Text("NEW")
-                    .font(.system(size: 14, weight: .black))
+                    .font(.system(size: 13, weight: .black))
                     .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 5)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
                     .background(Color.red)
                     .clipShape(Capsule())
-                    .padding(12)
+                    .padding(10)
             }
-            .padding(.leading, 20)
+            .padding(.leading, 16)
             .padding(.vertical, 16)
 
             // — Info —
             VStack(alignment: .leading, spacing: 8) {
 
                 // Sponsor
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
                         if case .success(let img) = phase {
                             img.resizable().aspectRatio(contentMode: .fill)
@@ -77,30 +75,30 @@ struct TVShoppableProductCard: View {
                             Circle().fill(accentBlue)
                         }
                     }
-                    .frame(width: 28, height: 28)
+                    .frame(width: 22, height: 22)
                     .clipShape(Circle())
 
                     Text(sponsorName)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(.white.opacity(0.6))
-                        .kerning(1.2)
+                        .kerning(1.0)
                 }
 
                 // Nombre
                 Text(product.name)
-                    .font(.system(size: 19, weight: .bold))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
 
                 // Precio
                 Text(product.formattedPrice)
-                    .font(.system(size: 22, weight: .heavy))
+                    .font(.system(size: 20, weight: .heavy))
                     .foregroundColor(.white)
 
-                // — Botón — tvOS-safe, sin fondo fantasma
+                // — Botón full width —
                 Button(action: onAddToCart) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 8) {
                         Spacer()
                         Text("Legg i handlekurv")
                             .font(.system(size: 15, weight: .bold))
@@ -108,15 +106,16 @@ struct TVShoppableProductCard: View {
                             .font(.system(size: 13))
                         Spacer()
                     }
-                    .foregroundColor(focused ? .white : .white)
-                    .padding(.vertical, 16)
-                    .background(focused ? accentBlue : accentBlue.opacity(0.75))
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .foregroundColor(.white)
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity)
+                    .background(focused ? accentBlue : accentBlue.opacity(0.8))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(focused ? Color.white.opacity(0.6) : Color.clear, lineWidth: 2)
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(focused ? Color.white.opacity(0.5) : Color.clear, lineWidth: 1.5)
                     )
-                    .scaleEffect(focused ? 1.04 : 1.0)
+                    .scaleEffect(focused ? 1.02 : 1.0)
                     .animation(.spring(response: 0.2, dampingFraction: 0.7), value: focused)
                 }
                 .buttonStyle(.plain)
@@ -127,15 +126,16 @@ struct TVShoppableProductCard: View {
                     }
                 }
             }
-            .padding(.leading, 20)
-            .padding(.trailing, 24)
+            .padding(.leading, 14)
+            .padding(.trailing, 16)
             .padding(.vertical, 16)
-            .frame(width: 270)
+            .frame(maxWidth: .infinity)
         }
+        .frame(width: 460)
         .background(cardBg)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 18)
                 .stroke(Color.white.opacity(0.08), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.65), radius: 28, x: 0, y: 10)
