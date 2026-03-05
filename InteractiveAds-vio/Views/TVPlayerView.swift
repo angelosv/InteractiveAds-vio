@@ -45,7 +45,13 @@ struct TVPlayerView: View {
             }
         }
         .onAppear {
-            let config = VioTVConfigLoader.shared.config!
+            guard let config = VioTVConfigLoader.shared.config else {
+                print("❌ [VioTV] config no cargado — asegúrate de llamar VioTVConfigLoader.shared.load()")
+                // Fallback directo
+                wsManager.connect(to: "wss://api-dev.vio.live/ws/36")
+                return
+            }
+            print("✅ [VioTV] conectando a \(config.webSocketUrl)")
             wsManager.connect(to: config.webSocketUrl)
         }
         .onReceive(wsManager.$lastShoppableAd) { event in
@@ -74,11 +80,11 @@ struct TVPlayerView: View {
 
     private func sendCartIntent(productId: String) {
         let config = VioTVConfigLoader.shared.config!
-        let url = URL(string: "\(config.backendUrl)/api/cart-intent")!
+        let url = URL(string: "\(config.backendUrl)/api/campaigns/\(config.campaignId)/cart-intent")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(config.apiKey, forHTTPHeaderField: "X-Api-Key")
+        request.setValue(config.apiKey, forHTTPHeaderField: "X-API-Key")
         request.httpBody = try? JSONSerialization.data(withJSONObject: [
             "userId": "angelo_demo_001",
             "campaignId": config.campaignId,
