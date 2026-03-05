@@ -27,18 +27,16 @@ struct TVShoppableProductCard: View {
     let onAddToCart: () -> Void
     let onDismiss: () -> Void
 
-    @FocusState private var isButtonFocused: Bool
-    @State private var showSuccess = false
-
+    @FocusState private var focused: Bool
     private let sponsorLogoUrl = "https://api-dev.vio.live/objects/uploads/e166816b-48e8-4e9f-98fa-53d164a2ab6f"
     private let sponsorName = "TORSHOV SPORT"
-    private let accentColor = Color(red: 67/255, green: 2/255, blue: 1)
     private let accentBlue = Color(red: 0.23, green: 0.51, blue: 0.96)
     private let cardBg = Color(red: 0.08, green: 0.07, blue: 0.12)
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
 
+            // — Imagen producto —
             ZStack(alignment: .topLeading) {
                 AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
                     if case .success(let img) = phase {
@@ -51,6 +49,7 @@ struct TVShoppableProductCard: View {
                 .clipped()
                 .clipShape(RoundedRectangle(cornerRadius: 14))
 
+                // Badge NEW
                 Text("NEW")
                     .font(.system(size: 14, weight: .black))
                     .foregroundColor(.white)
@@ -63,8 +62,10 @@ struct TVShoppableProductCard: View {
             .padding(.leading, 20)
             .padding(.vertical, 20)
 
+            // — Info —
             VStack(alignment: .leading, spacing: 8) {
 
+                // Sponsor
                 HStack(spacing: 8) {
                     AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
                         if case .success(let img) = phase {
@@ -82,17 +83,20 @@ struct TVShoppableProductCard: View {
                         .kerning(1.2)
                 }
 
+                // Nombre
                 Text(product.name)
                     .font(.system(size: 19, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
 
+                // Precio
                 Text(product.formattedPrice)
                     .font(.system(size: 22, weight: .heavy))
                     .foregroundColor(.white)
 
-                ZStack {
+                // — Botón — tvOS-safe, sin fondo fantasma
+                Button(action: onAddToCart) {
                     HStack(spacing: 10) {
                         Spacer()
                         Text("Legg i handlekurv")
@@ -101,35 +105,24 @@ struct TVShoppableProductCard: View {
                             .font(.system(size: 13))
                         Spacer()
                     }
-                    .foregroundColor(.white)
-                    .opacity(showSuccess ? 0 : 1)
-
-                    HStack(spacing: 8) {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 18, weight: .bold))
-                        Text("Lagt til!")
-                            .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(focused ? .white : .white)
+                    .padding(.vertical, 16)
+                    .background(focused ? accentBlue : accentBlue.opacity(0.75))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(focused ? Color.white.opacity(0.6) : Color.clear, lineWidth: 2)
+                    )
+                    .scaleEffect(focused ? 1.04 : 1.0)
+                    .animation(.spring(response: 0.2, dampingFraction: 0.7), value: focused)
+                }
+                .buttonStyle(.plain)
+                .focused($focused)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        focused = true
                     }
-                    .foregroundColor(.white)
-                    .opacity(showSuccess ? 1 : 0)
-                    .scaleEffect(showSuccess ? 1 : 0.5)
                 }
-                .padding(.vertical, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(showSuccess ? Color(red: 0.15, green: 0.7, blue: 0.35) : accentColor)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(isButtonFocused ? Color.white.opacity(0.6) : Color.clear, lineWidth: 2)
-                )
-                .focusable(true)
-                .focused($isButtonFocused)
-                .onLongPressGesture(minimumDuration: 0.01) {
-                    handleTap()
-                }
-                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: showSuccess)
-                .animation(.easeInOut(duration: 0.15), value: isButtonFocused)
             }
             .padding(.leading, 20)
             .padding(.trailing, 24)
@@ -145,23 +138,5 @@ struct TVShoppableProductCard: View {
         )
         .shadow(color: .black.opacity(0.65), radius: 28, x: 0, y: 10)
         .focusSection()
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                isButtonFocused = true
-            }
-        }
-    }
-
-    private func handleTap() {
-        guard !showSuccess else { return }
-        onAddToCart()
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
-            showSuccess = true
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
-            withAnimation(.easeOut(duration: 0.25)) {
-                showSuccess = false
-            }
-        }
     }
 }
