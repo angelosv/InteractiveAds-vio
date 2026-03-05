@@ -32,6 +32,7 @@ struct TVShoppableProductCard: View {
     private let bg     = Color(red: 0.071, green: 0.063, blue: 0.110)
 
     private func handleTap() {
+        print("🛒 [TVCard] handleTap llamado")
         guard !confirmed else { return }
         withAnimation(.spring(response: 0.3)) { confirmed = true }
         onAddToCart()
