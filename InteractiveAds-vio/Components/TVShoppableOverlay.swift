@@ -95,7 +95,6 @@ struct TVShoppableProductCard: View {
                     .font(.system(size: 28, weight: .heavy))
                     .foregroundColor(.white)
 
-                Spacer()
 
                 // — Botón — tvOS-safe, sin fondo fantasma
                 Button(action: onAddToCart) {
