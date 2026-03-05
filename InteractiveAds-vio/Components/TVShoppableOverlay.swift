@@ -1,3 +1,6 @@
+// ⚠️ VIOBOT-OWNED — Do not modify this file manually or via Cursor.
+// All changes go through Viobot (OpenClaw) only.
+
 import SwiftUI
 
 struct TVShoppableOverlay: View {
