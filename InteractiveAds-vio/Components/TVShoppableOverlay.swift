@@ -59,9 +59,9 @@ struct TVShoppableProductCard: View {
                     .clipped()
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    // Info
-                    VStack(alignment: .leading, spacing: 5) {
-                        // Sponsor
+                    // Info — alineada top a bottom con la imagen
+                    VStack(alignment: .leading, spacing: 0) {
+                        // TOP: Sponsor
                         HStack(spacing: 6) {
                             AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
                                 if case .success(let img) = phase {
@@ -80,28 +80,32 @@ struct TVShoppableProductCard: View {
                                 .kerning(0.8)
                         }
 
-                        // Título más pequeño
+                        // Título
                         Text(product.name)
                             .font(.system(size: 15, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top, 6)
 
-                        // Precio + badge -20%
-                        HStack(alignment: .center, spacing: 8) {
-                            Text(product.formattedPrice)
-                                .font(.system(size: 20, weight: .heavy))
-                                .foregroundColor(.white)
+                        Spacer()
 
+                        // BOTTOM: Badge + precio
+                        VStack(alignment: .leading, spacing: 4) {
                             Text("-20%")
-                                .font(.system(size: 11, weight: .black))
-                                .foregroundColor(purple)
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(purple.opacity(0.20))
+                                .font(.system(size: 12, weight: .black))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 4)
+                                .background(purple)
                                 .clipShape(Capsule())
+
+                            Text(product.formattedPrice)
+                                .font(.system(size: 22, weight: .heavy))
+                                .foregroundColor(.white)
                         }
                     }
+                    .frame(height: 150)
                 }
                 .padding(16)
 
