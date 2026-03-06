@@ -131,7 +131,12 @@ struct TVShoppableProductCard: View {
             .shadow(color: Color.black.opacity(0.6), radius: 28, x: 0, y: 8)
         }
         .buttonStyle(.plain)
+        .focusEffectDisabled()
         .focused($focused)
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(focused ? Color.white.opacity(0.4) : Color.clear, lineWidth: 2)
+        )
         .scaleEffect(focused ? 1.02 : 1.0)
         .animation(.easeInOut(duration: 0.15), value: focused)
         .onAppear {
