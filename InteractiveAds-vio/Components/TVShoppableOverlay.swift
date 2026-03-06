@@ -82,13 +82,13 @@ struct TVShoppableProductCard: View {
 
                         // Título
                         Text(product.name)
-                            .font(.system(size: 15, weight: .bold))
+                            .font(.system(size: 17, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                             .padding(.top, 6)
 
-                        Spacer()
+                        Spacer(minLength: 8)
 
                         // BOTTOM: Badge + precio
                         VStack(alignment: .leading, spacing: 4) {
