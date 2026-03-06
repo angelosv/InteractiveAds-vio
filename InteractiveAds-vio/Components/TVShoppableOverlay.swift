@@ -45,31 +45,24 @@ struct TVShoppableProductCard: View {
         Button(action: handleTap) {
             VStack(alignment: .leading, spacing: 0) {
 
-                HStack(alignment: .center, spacing: 16) {
+                HStack(alignment: .center, spacing: 14) {
 
-                    ZStack(alignment: .topLeading) {
-                        AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
-                            if case .success(let img) = phase {
-                                img.resizable().aspectRatio(contentMode: .fill)
-                            } else {
-                                Rectangle().fill(Color.white.opacity(0.05))
-                            }
+                    // Imagen — más grande
+                    AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
+                        if case .success(let img) = phase {
+                            img.resizable().aspectRatio(contentMode: .fill)
+                        } else {
+                            Rectangle().fill(Color.white.opacity(0.05))
                         }
-                        .frame(width: 120, height: 120)
-                        .clipped()
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-
-                        Text("NEW")
-                            .font(.system(size: 11, weight: .black))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8).padding(.vertical, 3)
-                            .background(Color(red: 0.863, green: 0.149, blue: 0.149))
-                            .clipShape(Capsule())
-                            .padding(8)
                     }
+                    .frame(width: 150, height: 150)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 8) {
+                    // Info
+                    VStack(alignment: .leading, spacing: 5) {
+                        // Sponsor
+                        HStack(spacing: 6) {
                             AsyncImage(url: URL(string: sponsorLogoUrl)) { phase in
                                 if case .success(let img) = phase {
                                     img.resizable().aspectRatio(contentMode: .fill)
@@ -77,29 +70,42 @@ struct TVShoppableProductCard: View {
                                     Circle().fill(purple)
                                 }
                             }
-                            .frame(width: 32, height: 32)
+                            .frame(width: 24, height: 24)
                             .clipShape(Circle())
                             .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 1))
 
                             Text("TORSHOV SPORT")
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.system(size: 11, weight: .bold))
                                 .foregroundColor(Color.white.opacity(0.65))
                                 .kerning(0.8)
                         }
 
+                        // Título más pequeño
                         Text(product.name)
-                            .font(.system(size: 20, weight: .bold))
+                            .font(.system(size: 15, weight: .bold))
                             .foregroundColor(.white)
-                            .lineLimit(3)
+                            .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        Text(product.formattedPrice)
-                            .font(.system(size: 22, weight: .heavy))
-                            .foregroundColor(.white)
+                        // Precio + badge -20%
+                        HStack(alignment: .center, spacing: 8) {
+                            Text(product.formattedPrice)
+                                .font(.system(size: 20, weight: .heavy))
+                                .foregroundColor(.white)
+
+                            Text("-20%")
+                                .font(.system(size: 11, weight: .black))
+                                .foregroundColor(purple)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(purple.opacity(0.20))
+                                .clipShape(Capsule())
+                        }
                     }
                 }
                 .padding(16)
 
+                // Botón
                 HStack(spacing: 10) {
                     Spacer()
                     if confirmed {
@@ -124,7 +130,7 @@ struct TVShoppableProductCard: View {
                 .padding(.bottom, 14)
                 .animation(.spring(response: 0.3), value: confirmed)
             }
-            .frame(width: 380)
+            .frame(width: 400)
             .background(bg)
             .clipShape(RoundedRectangle(cornerRadius: 18))
             .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08), lineWidth: 1))
