@@ -130,17 +130,23 @@ struct TVShoppableProductCard: View {
             .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08), lineWidth: 1))
             .shadow(color: Color.black.opacity(0.6), radius: 28, x: 0, y: 8)
         }
-        .buttonStyle(.plain)
-        .focusEffectDisabled()
+        .buttonStyle(NoHaloButtonStyle())
         .focused($focused)
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(focused ? Color.white.opacity(0.4) : Color.clear, lineWidth: 2)
+                .stroke(focused ? Color.white.opacity(0.35) : Color.clear, lineWidth: 2)
         )
         .scaleEffect(focused ? 1.02 : 1.0)
         .animation(.easeInOut(duration: 0.15), value: focused)
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focused = true }
         }
+    }
+}
+
+struct NoHaloButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .focusEffectDisabled()
     }
 }
