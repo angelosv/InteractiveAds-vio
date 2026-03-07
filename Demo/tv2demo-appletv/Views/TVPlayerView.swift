@@ -3,7 +3,6 @@ import VioTV
 
 struct TVPlayerView: View {
     @StateObject private var videoViewModel = VideoPlayerViewModel()
-    @StateObject private var vioManager = VioTVManager.shared
 
     /// Campaign ID from vio-config.json (loaded at app launch)
     private let campaignId: Int = {
@@ -29,17 +28,8 @@ struct TVPlayerView: View {
                 VideoControlsOverlay(viewModel: videoViewModel)
                     .ignoresSafeArea(edges: .bottom)
 
-                // SDK Shoppable overlay — driven by VioTVManager.activeAd
-                if let event = vioManager.activeAd {
-                    VioTVShoppableOverlay(
-                        event: event,
-                        dismissAfter: 15,
-                        campaignId: campaignId,
-                        onDismiss: {
-                            vioManager.activeAd = nil
-                        }
-                    )
-                }
+                // SDK Shoppable overlay — fully auto-managed
+                VioTVShoppableOverlay()
             } else {
                 // Fallback gradient
                 LinearGradient(
@@ -56,6 +46,5 @@ struct TVPlayerView: View {
         .onDisappear {
             VioTV.disconnect()
         }
-        .animation(.easeInOut(duration: 0.4), value: vioManager.activeAd != nil)
     }
 }
