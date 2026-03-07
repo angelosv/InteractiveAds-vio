@@ -156,13 +156,15 @@ struct VioTVShoppableProductCard: View {
 
                         // BOTTOM: Badge + price
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("-20%")
-                                .font(.system(size: 12, weight: .black))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 9)
-                                .padding(.vertical, 4)
-                                .background(purple)
-                                .clipShape(Capsule())
+                            if let badge = event.discountBadge {
+                                Text(badge)
+                                    .font(.system(size: 12, weight: .black))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 9)
+                                    .padding(.vertical, 4)
+                                    .background(purple)
+                                    .clipShape(Capsule())
+                            }
 
                             Text(product.formattedPrice)
                                 .font(.system(size: 22, weight: .heavy))

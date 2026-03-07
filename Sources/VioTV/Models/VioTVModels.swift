@@ -8,13 +8,15 @@ public struct ShoppableAdEvent: Codable {
     public let product: ShoppableProduct
     public let sponsor: ShoppableSponsor?
     public let timestamp: Double?
+    public let discountBadge: String?
 
-    public init(type: String, broadcastId: String? = nil, product: ShoppableProduct, sponsor: ShoppableSponsor? = nil, timestamp: Double? = nil) {
+    public init(type: String, broadcastId: String? = nil, product: ShoppableProduct, sponsor: ShoppableSponsor? = nil, timestamp: Double? = nil, discountBadge: String? = nil) {
         self.type = type
         self.broadcastId = broadcastId
         self.product = product
         self.sponsor = sponsor
         self.timestamp = timestamp
+        self.discountBadge = discountBadge
     }
 }
 
