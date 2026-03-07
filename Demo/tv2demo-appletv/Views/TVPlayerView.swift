@@ -1,11 +1,18 @@
 import SwiftUI
+import VioTV
 
 struct TVPlayerView: View {
     @StateObject private var videoViewModel = VideoPlayerViewModel()
-    @StateObject private var wsManager = VioTVWebSocketManager.shared
-    @State private var showShoppableCard = false
-    @State private var commerceProduct: CommerceProduct?
-    @State private var dismissWorkItem: DispatchWorkItem?
+    @StateObject private var vioManager = VioTVManager.shared
+
+    /// Campaign ID from vio-config.json (loaded at app launch)
+    private let campaignId: Int = {
+        guard let url = Bundle.main.url(forResource: "vio-config", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let id = json["campaignId"] as? Int else { return 36 }
+        return id
+    }()
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -14,28 +21,27 @@ struct TVPlayerView: View {
                 VideoPlayerView(videoURL: videoURL, viewModel: videoViewModel)
                     .ignoresSafeArea()
 
-                // Dark overlay to make content readable
+                // Dark overlay
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
 
-                // Video controls overlay — estilo referencia, ocultar tras 3s
+                // Video controls overlay
                 VideoControlsOverlay(viewModel: videoViewModel)
                     .ignoresSafeArea(edges: .bottom)
 
-                // Shoppable product card — encima de controles para que Add to cart sea visible
-                if showShoppableCard, let product = commerceProduct {
-                    TVShoppableOverlay(
-                        product: product,
-                        onAddToCart: { sendCartIntent(productId: product.id) },
-                        onDismiss: { withAnimation(.easeOut(duration: 0.35)) { showShoppableCard = false } }
+                // SDK Shoppable overlay — driven by VioTVManager.activeAd
+                if let event = vioManager.activeAd {
+                    VioTVShoppableOverlay(
+                        event: event,
+                        dismissAfter: 15,
+                        campaignId: campaignId,
+                        onDismiss: {
+                            vioManager.activeAd = nil
+                        }
                     )
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .move(edge: .bottom)),
-                        removal: .opacity.combined(with: .move(edge: .bottom))
-                    ))
                 }
             } else {
-                // Fallback gradient if video fails
+                // Fallback gradient
                 LinearGradient(
                     colors: [Color(red: 0.05, green: 0.05, blue: 0.15), Color(red: 0.1, green: 0.05, blue: 0.2)],
                     startPoint: .topLeading,
@@ -44,85 +50,12 @@ struct TVPlayerView: View {
                 .ignoresSafeArea()
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .tvCartIntentSent)) { _ in
-            dismissWorkItem?.cancel()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                withAnimation { showShoppableCard = false }
-            }
-        }
         .onAppear {
-            guard let config = VioTVConfigLoader.shared.config else {
-                print("❌ [VioTV] config no cargado — asegúrate de llamar VioTVConfigLoader.shared.load()")
-                // Fallback directo
-                wsManager.connect(to: "wss://api-dev.vio.live/ws/36")
-                return
-            }
-            print("✅ [VioTV] conectando a \(config.webSocketUrl)")
-            wsManager.connect(to: config.webSocketUrl)
+            VioTV.connect(broadcastId: "\(campaignId)")
         }
-        .onReceive(wsManager.$lastShoppableAd) { event in
-            guard let event = event, let tvProduct = event.product else { return }
-            // Usar los datos del WS directamente (ya resueltos por el backend)
-            // Construimos via JSON para evitar problemas con custom init
-            let dict: [String: Any] = [
-                "id": tvProduct.id,
-                "title": tvProduct.name,
-                "images": tvProduct.imageUrl.map { [["url": $0, "order": 0]] } ?? [],
-                "price": ["amount": tvProduct.price, "amount_incl_taxes": tvProduct.price, "currency_code": tvProduct.currency]
-            ]
-            if let data = try? JSONSerialization.data(withJSONObject: dict),
-               let product = try? JSONDecoder().decode(CommerceProduct.self, from: data) {
-                dismissWorkItem?.cancel()
-                commerceProduct = product
-                withAnimation(.easeOut(duration: 0.4)) { showShoppableCard = true }
-                print("✅ [VioTV] Mostrando card: \(product.name)")
-                // Desaparece automáticamente tras 15 segundos
-                let work = DispatchWorkItem {
-                    withAnimation(.easeIn(duration: 0.35)) { showShoppableCard = false }
-                }
-                dismissWorkItem = work
-                DispatchQueue.main.asyncAfter(deadline: .now() + 15, execute: work)
-            }
+        .onDisappear {
+            VioTV.disconnect()
         }
-        .animation(.easeInOut(duration: 0.4), value: showShoppableCard)
-    }
-
-    private func loadProduct() {
-        guard let productId = VioTVConfigLoader.shared.staticData?.demoProducts.first?.id else { return }
-        Task {
-            if let product = await VioCommerceService.shared.fetchProduct(id: productId) {
-                await MainActor.run {
-                    commerceProduct = product
-                }
-            }
-        }
-    }
-
-    private func sendCartIntent(productId: String) {
-        let config = VioTVConfigLoader.shared.config!
-        let url = URL(string: "\(config.backendUrl)/api/campaigns/\(config.campaignId)/cart-intent")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(config.apiKey, forHTTPHeaderField: "X-API-Key")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: [
-            "userId": "angelo_demo_001",
-            "campaignId": config.campaignId,
-            "productId": productId,
-        ])
-        Task {
-            print("🛒 [CartIntent] POST a \(url)")
-            do {
-                let (data, response) = try await URLSession.shared.data(for: request)
-                let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-                let body = String(data: data, encoding: .utf8) ?? ""
-                print("🛒 [CartIntent] respuesta \(status): \(body.prefix(200))")
-            } catch {
-                print("❌ [CartIntent] error: \(error)")
-            }
-            await MainActor.run {
-                NotificationCenter.default.post(name: .tvCartIntentSent, object: nil)
-            }
-        }
+        .animation(.easeInOut(duration: 0.4), value: vioManager.activeAd != nil)
     }
 }
