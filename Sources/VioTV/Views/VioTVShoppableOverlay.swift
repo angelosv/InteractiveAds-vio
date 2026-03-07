@@ -1,61 +1,48 @@
 import SwiftUI
 
-/// Shoppable overlay that displays a product card from a ShoppableAdEvent.
-/// Visual layout is identical to the original TVShoppableOverlay.
+// Simple usage by broadcaster:
+// ZStack {
+//     TheirPlayerView()
+//     VioTVShoppableOverlay()
+// }
+
 public struct VioTVShoppableOverlay: View {
-    let event: ShoppableAdEvent
-    let dismissAfter: TimeInterval
-    var onDismiss: (() -> Void)?
+    var dismissAfter: TimeInterval
 
-    @State private var dismissed = false
-    @State private var dismissWorkItem: DispatchWorkItem?
-
-    public init(
-        event: ShoppableAdEvent,
-        dismissAfter: TimeInterval = 15,
-        onDismiss: (() -> Void)? = nil
-    ) {
-        self.event = event
+    public init(dismissAfter: TimeInterval = 15) {
         self.dismissAfter = dismissAfter
-        self.onDismiss = onDismiss
     }
 
     public var body: some View {
-        if !dismissed {
-            VStack {
-                Spacer()
-                HStack {
-                    VioTVShoppableProductCard(
-                        event: event,
-                        onDismiss: {
-                            withAnimation(.easeOut(duration: 0.35)) {
-                                dismissed = true
-                            }
-                            onDismiss?()
-                        }
-                    )
-                    .padding(.leading, 60)
-                    .padding(.bottom, 80)
-                    Spacer()
+        VioTVShoppableOverlayContainer(dismissAfter: dismissAfter)
+    }
+}
+
+// MARK: - Internal container that observes VioTVManager
+
+struct VioTVShoppableOverlayContainer: View {
+    @ObservedObject private var manager = VioTVManager.shared
+    let dismissAfter: TimeInterval
+
+    var body: some View {
+        if let ad = manager.activeAd {
+            VioTVShoppableProductCard(
+                event: ad,
+                dismissAfter: dismissAfter,
+                onDismiss: {
+                    withAnimation(.easeOut(duration: 0.35)) {
+                        manager.activeAd = nil
+                    }
                 }
-            }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            .padding(.leading, 60)
+            .padding(.bottom, 80)
             .transition(.asymmetric(
                 insertion: .opacity.combined(with: .move(edge: .bottom)),
                 removal: .opacity.combined(with: .move(edge: .bottom))
             ))
-            .onAppear {
-                let work = DispatchWorkItem {
-                    withAnimation(.easeIn(duration: 0.35)) {
-                        dismissed = true
-                    }
-                    onDismiss?()
-                }
-                dismissWorkItem = work
-                DispatchQueue.main.asyncAfter(deadline: .now() + dismissAfter, execute: work)
-            }
-            .onDisappear {
-                dismissWorkItem?.cancel()
-            }
+            .id(ad.timestamp)
         }
     }
 }
@@ -64,10 +51,12 @@ public struct VioTVShoppableOverlay: View {
 
 struct VioTVShoppableProductCard: View {
     let event: ShoppableAdEvent
+    let dismissAfter: TimeInterval
     let onDismiss: () -> Void
 
     @FocusState private var focused: Bool
     @State private var confirmed = false
+    @State private var dismissWorkItem: DispatchWorkItem?
 
     private let purple = Color(red: 0.404, green: 0.008, blue: 1.0)
     private let bg     = Color(red: 0.071, green: 0.063, blue: 0.110)
@@ -211,6 +200,17 @@ struct VioTVShoppableProductCard: View {
         .animation(.easeInOut(duration: 0.15), value: focused)
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focused = true }
+
+            let work = DispatchWorkItem {
+                withAnimation(.easeIn(duration: 0.35)) {
+                    onDismiss()
+                }
+            }
+            dismissWorkItem = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + dismissAfter, execute: work)
+        }
+        .onDisappear {
+            dismissWorkItem?.cancel()
         }
     }
 }
