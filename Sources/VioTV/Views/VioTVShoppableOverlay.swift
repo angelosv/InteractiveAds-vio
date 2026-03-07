@@ -5,7 +5,6 @@ import SwiftUI
 public struct VioTVShoppableOverlay: View {
     let event: ShoppableAdEvent
     let dismissAfter: TimeInterval
-    let campaignId: Int
     var onDismiss: (() -> Void)?
 
     @State private var dismissed = false
@@ -14,12 +13,10 @@ public struct VioTVShoppableOverlay: View {
     public init(
         event: ShoppableAdEvent,
         dismissAfter: TimeInterval = 15,
-        campaignId: Int,
         onDismiss: (() -> Void)? = nil
     ) {
         self.event = event
         self.dismissAfter = dismissAfter
-        self.campaignId = campaignId
         self.onDismiss = onDismiss
     }
 
@@ -30,7 +27,6 @@ public struct VioTVShoppableOverlay: View {
                 HStack {
                     VioTVShoppableProductCard(
                         event: event,
-                        campaignId: campaignId,
                         onDismiss: {
                             withAnimation(.easeOut(duration: 0.35)) {
                                 dismissed = true
@@ -68,7 +64,6 @@ public struct VioTVShoppableOverlay: View {
 
 struct VioTVShoppableProductCard: View {
     let event: ShoppableAdEvent
-    let campaignId: Int
     let onDismiss: () -> Void
 
     @FocusState private var focused: Bool
@@ -91,7 +86,7 @@ struct VioTVShoppableProductCard: View {
         withAnimation(.spring(response: 0.3)) { confirmed = true }
 
         Task { @MainActor in
-            VioTVManager.shared.sendCartIntent(productId: product.id, campaignId: campaignId)
+            VioTVManager.shared.sendCartIntent(productId: product.id, campaignId: event.campaignId ?? 0)
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
