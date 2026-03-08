@@ -28,11 +28,48 @@ public struct ShoppableProduct: Codable {
     public let images: [ProductImage]
     public let price: ProductPrice
 
+    // Accepts both Commerce GraphQL format and flat backend format (name, price int, currency, imageUrl)
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        // id: String or Int
+        if let strId = try? c.decode(String.self, forKey: .id) {
+            id = strId
+        } else {
+            id = String(try c.decode(Int.self, forKey: .id))
+        }
+        // title: accepts "title" or "name"
+        if let t = try? c.decode(String.self, forKey: .title) {
+            title = t
+        } else {
+            title = (try? c.decode(String.self, forKey: .name)) ?? ""
+        }
+        // images: accepts array or flat imageUrl
+        if let imgs = try? c.decode([ProductImage].self, forKey: .images) {
+            images = imgs
+        } else if let url = try? c.decode(String.self, forKey: .imageUrl) {
+            images = [ProductImage(url: url, order: 0)]
+        } else {
+            images = []
+        }
+        // price: accepts ProductPrice object or flat Int/Double + currency
+        if let p = try? c.decode(ProductPrice.self, forKey: .price) {
+            price = p
+        } else {
+            let amount = (try? c.decode(Double.self, forKey: .price)) ?? 0
+            let currency = (try? c.decode(String.self, forKey: .currency)) ?? "NOK"
+            price = ProductPrice(amount: amount, amountInclTaxes: amount, currencyCode: currency)
+        }
+    }
+
     public init(id: String, title: String, images: [ProductImage], price: ProductPrice) {
         self.id = id
         self.title = title
         self.images = images
         self.price = price
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, name, images, price, imageUrl, currency
     }
 
     public var primaryImageUrl: String? {
