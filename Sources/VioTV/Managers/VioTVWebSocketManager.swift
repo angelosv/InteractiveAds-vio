@@ -50,11 +50,26 @@ final class VioTVWebSocketManager: ObservableObject {
                     print("[VioTV] WS raw: \(text.prefix(200))")
                     if let data = text.data(using: .utf8) {
                         do {
-                            let event = try JSONDecoder().decode(ShoppableAdEvent.self, from: data)
-                            if event.type == "shoppable_ad" {
-                                DispatchQueue.main.async {
-                                    self?.lastShoppableAd = event
-                                    print("[VioTV] shoppable_ad received: \(event.product.title)")
+                            // Accept both "shoppable_ad" (native format) and "product" (backend event format)
+                            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                               let type = json["type"] as? String,
+                               type == "product" || type == "shoppable_ad" {
+
+                                if type == "shoppable_ad" {
+                                    // Native VioTV format: { type, product: { id, title, images, price }, sponsor }
+                                    let event = try JSONDecoder().decode(ShoppableAdEvent.self, from: data)
+                                    DispatchQueue.main.async {
+                                        self?.lastShoppableAd = event
+                                        print("[VioTV] shoppable_ad received: \(event.product.title)")
+                                    }
+                                } else {
+                                    // Backend product event format: { type, data: { id, productId, name, price, currency, imageUrl }, campaignLogo }
+                                    let event = try JSONDecoder().decode(BackendProductEvent.self, from: data)
+                                    let mapped = event.toShoppableAdEvent()
+                                    DispatchQueue.main.async {
+                                        self?.lastShoppableAd = mapped
+                                        print("[VioTV] product event mapped → shoppable_ad: \(mapped.product.title)")
+                                    }
                                 }
                             }
                         } catch {

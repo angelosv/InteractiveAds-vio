@@ -125,3 +125,48 @@ public struct ProductPrice: Codable {
         case currencyCode = "currency_code"
     }
 }
+
+// MARK: - BackendProductEvent (adapter for /api/events/product format)
+
+/// Maps the backend's { type: "product", data: { name, price, currency, imageUrl } }
+/// to the ShoppableAdEvent format expected by VioTVShoppableOverlay.
+struct BackendProductEvent: Codable {
+    let type: String
+    let data: BackendProductData
+    let campaignLogo: String?
+    let timestamp: Int64?
+
+    struct BackendProductData: Codable {
+        let id: String
+        let productId: String?
+        let name: String
+        let description: String?
+        let price: String      // arrives as string e.g. "1299"
+        let currency: String?
+        let imageUrl: String?
+        let campaignLogo: String?
+    }
+
+    func toShoppableAdEvent() -> ShoppableAdEvent {
+        let priceAmount = Double(data.price) ?? 0
+        let currency = data.currency ?? "NOK"
+        let imageUrl = data.imageUrl ?? ""
+
+        let product = ShoppableProduct(
+            id: data.productId ?? data.id,
+            title: data.name,
+            images: imageUrl.isEmpty ? [] : [ProductImage(url: imageUrl, order: 0)],
+            price: ProductPrice(amount: priceAmount, amountInclTaxes: priceAmount, currencyCode: currency)
+        )
+
+        let logoUrl = data.campaignLogo ?? campaignLogo
+        let sponsor = logoUrl.map { ShoppableSponsor(name: "", logoUrl: $0) }
+
+        return ShoppableAdEvent(
+            type: "shoppable_ad",
+            product: product,
+            sponsor: sponsor,
+            campaignId: nil
+        )
+    }
+}
