@@ -7,7 +7,7 @@ public enum VioTVEnvironment {
 
     public var backendURL: String {
         switch self {
-        case .development: return "https://socket-qa.reachu.io"
+        case .development: return "https://api-dev.vio.live"
         case .production:  return "https://api.vio.live"
         }
     }
@@ -32,7 +32,7 @@ public final class VioTVConfiguration {
 
     public var webSocketBaseURL: String {
         switch environment {
-        case .development: return "wss://socket-qa.reachu.io/ws"
+        case .development: return "wss://api-dev.vio.live/ws"
         case .production:  return "wss://api.vio.live/ws"
         }
     }
