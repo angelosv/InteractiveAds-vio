@@ -9,11 +9,13 @@ public enum VioTV {
     /// Call this once at app launch before using any other VioTV API.
     public static func configure(
         apiKey: String,
+        commerceApiKey: String,
         userId: String = "",
         environment: VioTVEnvironment = .development
     ) {
         VioTVConfiguration.shared.configure(
             apiKey: apiKey,
+            commerceApiKey: commerceApiKey,
             userId: userId,
             environment: environment
         )
