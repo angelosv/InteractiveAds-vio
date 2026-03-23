@@ -1,7 +1,7 @@
 import Foundation
 
 /// Commerce service that communicates with the Vio GraphQL API.
-/// Uses apiKey from VioTVConfiguration — no hardcoded credentials.
+/// Uses commerceApiKey from VioTVConfiguration — separate from SDK apiKey.
 public final class VioTVCommerceService {
     public static let shared = VioTVCommerceService()
 
@@ -13,7 +13,7 @@ public final class VioTVCommerceService {
         let query = """
         {
           Channel {
-            GetProductsByIds(product_ids: ["\(id)"]) {
+            GetProductsByIds(product_ids: [\(id)]) {
               id
               title
               images { url order }
@@ -35,7 +35,7 @@ public final class VioTVCommerceService {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(config.apiKey, forHTTPHeaderField: "Authorization")
+        request.setValue(config.commerceApiKey, forHTTPHeaderField: "Authorization")
         request.httpBody = try? JSONSerialization.data(withJSONObject: ["query": query])
 
         guard let (data, _) = try? await URLSession.shared.data(for: request),
@@ -45,6 +45,7 @@ public final class VioTVCommerceService {
         }
 
         guard let commerceProduct = json.data?.channel?.getProductsByIds?.first else {
+            print("[VioTV] Product \(id) not found in commerce response")
             return nil
         }
 
@@ -58,7 +59,7 @@ public final class VioTVCommerceService {
             currencyCode: commerceProduct.price?.currency_code ?? "NOK"
         )
         return ShoppableProduct(
-            id: commerceProduct.id,
+            id: String(commerceProduct.id),
             title: commerceProduct.title,
             images: images,
             price: price
@@ -85,7 +86,7 @@ struct CommerceChannelData: Codable {
 }
 
 struct CommerceProduct: Codable {
-    let id: String
+    let id: Int
     let title: String
     let images: [CommerceImage]?
     let price: CommercePrice?
