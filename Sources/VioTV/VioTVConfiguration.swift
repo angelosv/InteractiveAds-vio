@@ -18,6 +18,7 @@ public final class VioTVConfiguration {
     public static let shared = VioTVConfiguration()
 
     public private(set) var apiKey: String = ""
+    public private(set) var commerceApiKey: String = ""
     public private(set) var userId: String = ""
     public private(set) var environment: VioTVEnvironment = .development
 
@@ -37,8 +38,9 @@ public final class VioTVConfiguration {
         }
     }
 
-    func configure(apiKey: String, userId: String, environment: VioTVEnvironment) {
+    func configure(apiKey: String, commerceApiKey: String, userId: String, environment: VioTVEnvironment) {
         self.apiKey = apiKey
+        self.commerceApiKey = commerceApiKey
         self.userId = userId
         self.environment = environment
         print("[VioTV] Configured — env: \(environment), userId: \(userId.isEmpty ? "(none)" : userId)")
