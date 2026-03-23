@@ -13,6 +13,7 @@ struct InteractiveAds_vioApp: App {
 
         VioTV.configure(
             apiKey: config.apiKey,
+            commerceApiKey: config.commerceApiKey,
             userId: "demo_user_001",
             environment: .development
         )
@@ -32,6 +33,7 @@ struct InteractiveAds_vioApp: App {
 /// Minimal config struct for the demo app's vio-config.json.
 struct DemoConfig: Codable {
     let apiKey: String
+    let commerceApiKey: String
     let campaignId: Int
     let contentId: String
     let country: String
