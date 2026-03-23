@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "VioTVSDK",
     platforms: [
-        .tvOS(.v15)
+        .tvOS(.v17)
     ],
     products: [
         .library(
