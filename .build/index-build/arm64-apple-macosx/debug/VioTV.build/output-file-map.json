@@ -1,0 +1,54 @@
+{
+  "": {
+    "swift-dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/master.swiftdeps"
+  },
+  "/Users/angelo/Documents/GitHub/InteractiveAds-vio/Sources/VioTV/Managers/VioTVCommerceService.swift": {
+    "dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVCommerceService.d",
+    "object": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVCommerceService.swift.o",
+    "swiftmodule": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVCommerceService~partial.swiftmodule",
+    "swift-dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVCommerceService.swiftdeps",
+    "diagnostics": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVCommerceService.dia"
+  },
+  "/Users/angelo/Documents/GitHub/InteractiveAds-vio/Sources/VioTV/Managers/VioTVWebSocketManager.swift": {
+    "dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVWebSocketManager.d",
+    "object": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVWebSocketManager.swift.o",
+    "swiftmodule": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVWebSocketManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVWebSocketManager.swiftdeps",
+    "diagnostics": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVWebSocketManager.dia"
+  },
+  "/Users/angelo/Documents/GitHub/InteractiveAds-vio/Sources/VioTV/Models/VioTVModels.swift": {
+    "dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVModels.d",
+    "object": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVModels.swift.o",
+    "swiftmodule": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVModels~partial.swiftmodule",
+    "swift-dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVModels.swiftdeps",
+    "diagnostics": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVModels.dia"
+  },
+  "/Users/angelo/Documents/GitHub/InteractiveAds-vio/Sources/VioTV/Views/VioTVShoppableOverlay.swift": {
+    "dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVShoppableOverlay.d",
+    "object": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVShoppableOverlay.swift.o",
+    "swiftmodule": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVShoppableOverlay~partial.swiftmodule",
+    "swift-dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVShoppableOverlay.swiftdeps",
+    "diagnostics": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVShoppableOverlay.dia"
+  },
+  "/Users/angelo/Documents/GitHub/InteractiveAds-vio/Sources/VioTV/VioTV.swift": {
+    "dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTV.d",
+    "object": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTV.swift.o",
+    "swiftmodule": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTV~partial.swiftmodule",
+    "swift-dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTV.swiftdeps",
+    "diagnostics": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTV.dia"
+  },
+  "/Users/angelo/Documents/GitHub/InteractiveAds-vio/Sources/VioTV/VioTVConfiguration.swift": {
+    "dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVConfiguration.d",
+    "object": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVConfiguration.swift.o",
+    "swiftmodule": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVConfiguration~partial.swiftmodule",
+    "swift-dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVConfiguration.swiftdeps",
+    "diagnostics": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVConfiguration.dia"
+  },
+  "/Users/angelo/Documents/GitHub/InteractiveAds-vio/Sources/VioTV/VioTVManager.swift": {
+    "dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVManager.d",
+    "object": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVManager.swift.o",
+    "swiftmodule": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVManager.swiftdeps",
+    "diagnostics": "/Users/angelo/Documents/GitHub/InteractiveAds-vio/.build/index-build/arm64-apple-macosx/debug/VioTV.build/VioTVManager.dia"
+  }
+}

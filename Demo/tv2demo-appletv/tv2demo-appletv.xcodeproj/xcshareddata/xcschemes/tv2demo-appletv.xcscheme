@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FA0B1A05000000000000AA01"
-               BuildableName = "tv2demo-appletv.app"
+               BuildableName = "TV2 Demo.app"
                BlueprintName = "tv2demo-appletv"
                ReferencedContainer = "container:tv2demo-appletv.xcodeproj">
             </BuildableReference>
@@ -44,7 +44,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FA0B1A05000000000000AA01"
-            BuildableName = "tv2demo-appletv.app"
+            BuildableName = "TV2 Demo.app"
             BlueprintName = "tv2demo-appletv"
             ReferencedContainer = "container:tv2demo-appletv.xcodeproj">
          </BuildableReference>
@@ -61,7 +61,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FA0B1A05000000000000AA01"
-            BuildableName = "tv2demo-appletv.app"
+            BuildableName = "TV2 Demo.app"
             BlueprintName = "tv2demo-appletv"
             ReferencedContainer = "container:tv2demo-appletv.xcodeproj">
          </BuildableReference>
