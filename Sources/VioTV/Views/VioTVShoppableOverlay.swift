@@ -219,8 +219,12 @@ struct VioTVShoppableProductCard: View {
 
 struct NoHaloButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .focusEffectDisabled()
+        if #available(tvOS 17.0, *) {
+            configuration.label
+                .focusEffectDisabled()
+        } else {
+            configuration.label
+        }
     }
 }
 
