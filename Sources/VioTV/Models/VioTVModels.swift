@@ -61,6 +61,14 @@ public struct ShoppableProduct: Codable {
         }
     }
 
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(title, forKey: .title)
+        try c.encode(images, forKey: .images)
+        try c.encode(price, forKey: .price)
+    }
+
     public init(id: String, title: String, images: [ProductImage], price: ProductPrice) {
         self.id = id
         self.title = title
