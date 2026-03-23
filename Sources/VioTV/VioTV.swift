@@ -22,12 +22,14 @@ public enum VioTV {
     }
 
     /// Connect to the WebSocket for a given broadcast.
+    @MainActor
     public static func connect(broadcastId: String) {
         let url = "\(VioTVConfiguration.shared.webSocketBaseURL)/\(broadcastId)"
         VioTVManager.shared.connect(to: url)
     }
 
     /// Disconnect from the current WebSocket session.
+    @MainActor
     public static func disconnect() {
         VioTVManager.shared.disconnect()
     }
