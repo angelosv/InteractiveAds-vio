@@ -1,7 +1,5 @@
 import Foundation
 
-// MARK: - ShoppableAdEvent (from WebSocket payload)
-
 public struct ShoppableAdEvent: Codable {
     public let type: String
     public let broadcastId: String?
@@ -11,7 +9,15 @@ public struct ShoppableAdEvent: Codable {
     public let discountBadge: String?
     public let campaignId: Int?
 
-    public init(type: String, broadcastId: String? = nil, product: ShoppableProduct, sponsor: ShoppableSponsor? = nil, timestamp: Double? = nil, discountBadge: String? = nil, campaignId: Int? = nil) {
+    public init(
+        type: String,
+        broadcastId: String? = nil,
+        product: ShoppableProduct,
+        sponsor: ShoppableSponsor? = nil,
+        timestamp: Double? = nil,
+        discountBadge: String? = nil,
+        campaignId: Int? = nil
+    ) {
         self.type = type
         self.broadcastId = broadcastId
         self.product = product
@@ -19,6 +25,18 @@ public struct ShoppableAdEvent: Codable {
         self.timestamp = timestamp
         self.discountBadge = discountBadge
         self.campaignId = campaignId
+    }
+
+    public func withProduct(_ product: ShoppableProduct) -> ShoppableAdEvent {
+        ShoppableAdEvent(
+            type: type,
+            broadcastId: broadcastId,
+            product: product,
+            sponsor: sponsor,
+            timestamp: timestamp,
+            discountBadge: discountBadge,
+            campaignId: campaignId
+        )
     }
 }
 
@@ -28,22 +46,18 @@ public struct ShoppableProduct: Codable {
     public let images: [ProductImage]
     public let price: ProductPrice
 
-    // Accepts both Commerce GraphQL format and flat backend format (name, price int, currency, imageUrl)
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        // id: String or Int
         if let strId = try? c.decode(String.self, forKey: .id) {
             id = strId
         } else {
             id = String(try c.decode(Int.self, forKey: .id))
         }
-        // title: accepts "title" or "name"
         if let t = try? c.decode(String.self, forKey: .title) {
             title = t
         } else {
             title = (try? c.decode(String.self, forKey: .name)) ?? ""
         }
-        // images: accepts array or flat imageUrl
         if let imgs = try? c.decode([ProductImage].self, forKey: .images) {
             images = imgs
         } else if let url = try? c.decode(String.self, forKey: .imageUrl) {
@@ -51,7 +65,6 @@ public struct ShoppableProduct: Codable {
         } else {
             images = []
         }
-        // price: accepts ProductPrice object or flat Int/Double + currency
         if let p = try? c.decode(ProductPrice.self, forKey: .price) {
             price = p
         } else {
@@ -134,12 +147,9 @@ public struct ProductPrice: Codable {
     }
 }
 
-// MARK: - BackendProductEvent (adapter for /api/events/product format)
-
-/// Maps the backend's { type: "product", data: { name, price, currency, imageUrl } }
-/// to the ShoppableAdEvent format expected by VioTVShoppableOverlay.
 struct BackendProductEvent: Codable {
     let type: String
+    let campaignId: Int?
     let data: BackendProductData
     let campaignLogo: String?
     let timestamp: Int64?
@@ -149,7 +159,7 @@ struct BackendProductEvent: Codable {
         let productId: String?
         let name: String
         let description: String?
-        let price: String      // arrives as string e.g. "1299"
+        let price: String
         let currency: String?
         let imageUrl: String?
         let campaignLogo: String?
@@ -174,7 +184,7 @@ struct BackendProductEvent: Codable {
             type: "shoppable_ad",
             product: product,
             sponsor: sponsor,
-            campaignId: nil
+            campaignId: campaignId
         )
     }
 }

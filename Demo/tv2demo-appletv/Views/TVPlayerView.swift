@@ -4,15 +4,6 @@ import VioTV
 struct TVPlayerView: View {
     @StateObject private var videoViewModel = VideoPlayerViewModel()
 
-    /// Campaign ID from vio-config.json (loaded at app launch)
-    private let campaignId: Int = {
-        guard let url = Bundle.main.url(forResource: "vio-config", withExtension: "json"),
-              let data = try? Data(contentsOf: url),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let id = json["campaignId"] as? Int else { return 36 }
-        return id
-    }()
-
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             // Video Background
@@ -41,7 +32,7 @@ struct TVPlayerView: View {
             }
         }
         .onAppear {
-            VioTV.connect(broadcastId: "\(campaignId)")
+            VioTV.connect()
         }
         .onDisappear {
             VioTV.disconnect()

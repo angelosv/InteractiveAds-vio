@@ -1,10 +1,5 @@
 import SwiftUI
-
-// Simple usage by broadcaster:
-// ZStack {
-//     TheirPlayerView()
-//     VioTVShoppableOverlay()
-// }
+import VioTVCore
 
 public struct VioTVShoppableOverlay: View {
     var dismissAfter: TimeInterval
@@ -17,8 +12,6 @@ public struct VioTVShoppableOverlay: View {
         VioTVShoppableOverlayContainer(dismissAfter: dismissAfter)
     }
 }
-
-// MARK: - Internal container that observes VioTVManager
 
 struct VioTVShoppableOverlayContainer: View {
     @ObservedObject private var manager = VioTVManager.shared
@@ -47,8 +40,6 @@ struct VioTVShoppableOverlayContainer: View {
     }
 }
 
-// MARK: - Product Card (visual identical to TVShoppableProductCard)
-
 struct VioTVShoppableProductCard: View {
     let event: ShoppableAdEvent
     let dismissAfter: TimeInterval
@@ -59,37 +50,36 @@ struct VioTVShoppableProductCard: View {
     @State private var dismissWorkItem: DispatchWorkItem?
 
     private let purple = Color(red: 0.404, green: 0.008, blue: 1.0)
-    private let bg     = Color(red: 0.071, green: 0.063, blue: 0.110)
+    private let bg = Color(red: 0.071, green: 0.063, blue: 0.110)
 
     private var product: ShoppableProduct { event.product }
     private var sponsor: ShoppableSponsor? { event.sponsor }
 
-    private var sponsorColor: Color {
-        guard let hex = sponsor?.primaryColor else { return purple }
-        return Color(hex: hex) ?? purple
-    }
-
     private func handleTap() {
-        print("[VioTV] Card tap — sending cart intent")
+        print("[VioTV] Card tap - sending cart intent")
         guard !confirmed else { return }
-        withAnimation(.spring(response: 0.3)) { confirmed = true }
 
         Task { @MainActor in
-            VioTVManager.shared.sendCartIntent(productId: product.id, campaignId: event.campaignId ?? 0)
-        }
+            let campaignId = event.campaignId ?? VioTVConfiguration.shared.defaultCampaignId
+            guard let campaignId else {
+                print("[VioTV] Missing campaignId for cart-intent")
+                return
+            }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-            withAnimation { onDismiss() }
+            let success = await VioTVManager.shared.sendCartIntent(productId: product.id, campaignId: campaignId)
+            guard success else { return }
+
+            withAnimation(.spring(response: 0.3)) { confirmed = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                withAnimation { onDismiss() }
+            }
         }
     }
 
     var body: some View {
         Button(action: handleTap) {
             VStack(alignment: .leading, spacing: 0) {
-
                 HStack(alignment: .center, spacing: 14) {
-
-                    // Product image — 150x150
                     AsyncImage(url: URL(string: product.primaryImageUrl ?? "")) { phase in
                         if case .success(let img) = phase {
                             img.resizable().aspectRatio(contentMode: .fill)
@@ -101,9 +91,7 @@ struct VioTVShoppableProductCard: View {
                     .clipped()
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    // Info column — aligned top-to-bottom with image
                     VStack(alignment: .leading, spacing: 0) {
-                        // TOP: Sponsor
                         HStack(spacing: 6) {
                             if let logoUrl = sponsor?.logoUrl {
                                 AsyncImage(url: URL(string: logoUrl)) { phase in
@@ -128,7 +116,6 @@ struct VioTVShoppableProductCard: View {
                                 .kerning(0.8)
                         }
 
-                        // Title
                         Text(product.title)
                             .font(.system(size: 17, weight: .bold))
                             .foregroundColor(.white)
@@ -138,7 +125,6 @@ struct VioTVShoppableProductCard: View {
 
                         Spacer(minLength: 8)
 
-                        // BOTTOM: Badge + price
                         VStack(alignment: .leading, spacing: 4) {
                             if let badge = event.discountBadge {
                                 Text(badge)
@@ -159,7 +145,6 @@ struct VioTVShoppableProductCard: View {
                 }
                 .padding(16)
 
-                // Button
                 HStack(spacing: 10) {
                     Spacer()
                     if confirmed {
@@ -215,11 +200,9 @@ struct VioTVShoppableProductCard: View {
     }
 }
 
-// MARK: - NoHaloButtonStyle (tvOS focus halo removal)
-
 struct NoHaloButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        if #available(tvOS 17.0, *) {
+        if #available(tvOS 17.0, macOS 14.0, *) {
             configuration.label
                 .focusEffectDisabled()
         } else {
@@ -227,8 +210,6 @@ struct NoHaloButtonStyle: ButtonStyle {
         }
     }
 }
-
-// MARK: - Color hex initializer
 
 extension Color {
     init?(hex: String) {
