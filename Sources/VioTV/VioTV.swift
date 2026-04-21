@@ -37,14 +37,8 @@ public enum VioTV {
         userIdOverride: String? = nil
     ) throws {
         let config = try VioTVConfigurationLoader.loadConfiguration(fileName: fileName, bundle: bundle)
-        let environment = VioTVEnvironment(rawValue: (config.environment ?? "development").lowercased()) ?? .development
-        configure(
-            apiKey: config.apiKey,
-            commerceApiKey: config.commerceApiKey,
-            userId: userIdOverride ?? config.userId ?? "",
-            environment: environment,
-            defaultCampaignId: config.campaignId
-        )
+        VioTVConfiguration.shared.applyFileConfiguration(config, userIdOverride: userIdOverride)
+        setupCommerceEnrichment()
     }
 
     public static func connect(broadcastId: String) {

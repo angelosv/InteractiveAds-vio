@@ -51,12 +51,68 @@ final class VioTVCoreTests: XCTestCase {
             apiKey: "api_key",
             commerceApiKey: "commerce_key",
             userId: "user_1",
-            environment: .production,
+            environment: .testing,
             defaultCampaignId: 99
         )
 
         XCTAssertEqual(VioTVConfiguration.shared.defaultCampaignId, 99)
-        XCTAssertEqual(VioTVConfiguration.shared.environment, .production)
-        XCTAssertEqual(VioTVConfiguration.shared.webSocketBaseURL, "wss://api.vio.live/ws")
+        XCTAssertEqual(VioTVConfiguration.shared.environment, .testing)
+        XCTAssertEqual(VioTVConfiguration.shared.webSocketBaseURL, "wss://api-dev.vio.live/ws")
+    }
+
+    func testApplyFileConfigurationUsesDevelopmentOverrides() {
+        let fileConfig = VioTVFileConfiguration(
+            apiKey: "api_key",
+            commerceApiKey: "commerce_key",
+            campaignId: 36,
+            userId: "bundle_user",
+            environment: "development",
+            backendURL: "https://api-test.vio.live",
+            webSocketBaseURL: "wss://api-test.vio.live/ws",
+            commerceURL: "https://graph-ql-test.vio.live/graphql",
+            devBackendURL: "http://localhost:4000",
+            devWebSocketBaseURL: "ws://localhost:4000/ws",
+            devCommerceURL: "http://localhost:4000/graphql"
+        )
+
+        VioTVConfiguration.shared.applyFileConfiguration(fileConfig)
+
+        XCTAssertEqual(VioTVConfiguration.shared.backendURL, "http://localhost:4000")
+        XCTAssertEqual(VioTVConfiguration.shared.webSocketBaseURL, "ws://localhost:4000/ws")
+        XCTAssertEqual(VioTVConfiguration.shared.commerceURL, "http://localhost:4000/graphql")
+        XCTAssertEqual(VioTVConfiguration.shared.defaultCampaignId, 36)
+    }
+
+    func testSanitizeRemovesTrailingSlashFromOverrides() {
+        VioTVConfiguration.shared.configure(
+            apiKey: "api_key",
+            commerceApiKey: "commerce_key",
+            environment: .development,
+            backendURLOverride: "https://api-local-angelo.vio.live/",
+            webSocketBaseURLOverride: "wss://api-local-angelo.vio.live/ws/",
+            commerceURLOverride: "https://api-local-angelo.vio.live/graphql/"
+        )
+
+        XCTAssertEqual(VioTVConfiguration.shared.backendURL, "https://api-local-angelo.vio.live")
+        XCTAssertEqual(VioTVConfiguration.shared.webSocketBaseURL, "wss://api-local-angelo.vio.live/ws")
+        XCTAssertEqual(VioTVConfiguration.shared.commerceURL, "https://api-local-angelo.vio.live/graphql")
+    }
+
+    func testFileConfigurationDecodesSdkStyleKeyNames() throws {
+        let json = """
+        {
+          "apiKey": "tv_api_key",
+          "commerceApiKey": "commerce_key",
+          "campaignId": 42,
+          "environment": "testing",
+          "backendUrl": "https://api-test.vio.live",
+          "webSocketUrl": "wss://api-test.vio.live/ws",
+          "commerceUrl": "https://graph-ql-test.vio.live/graphql"
+        }
+        """
+        let decoded = try JSONDecoder().decode(VioTVFileConfiguration.self, from: Data(json.utf8))
+        XCTAssertEqual(decoded.backendURL, "https://api-test.vio.live")
+        XCTAssertEqual(decoded.webSocketBaseURL, "wss://api-test.vio.live/ws")
+        XCTAssertEqual(decoded.commerceURL, "https://graph-ql-test.vio.live/graphql")
     }
 }

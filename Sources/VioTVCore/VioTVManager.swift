@@ -38,7 +38,7 @@ public final class VioTVManager: ObservableObject {
         }
 
         let config = VioTVConfiguration.shared
-        let urlString = "\(config.environment.backendURL)/api/campaigns/\(campaignId)/cart-intent"
+        let urlString = "\(config.backendURL)/api/campaigns/\(campaignId)/cart-intent"
         guard let url = URL(string: urlString) else {
             print("[VioTV] Invalid cart-intent URL")
             return false
