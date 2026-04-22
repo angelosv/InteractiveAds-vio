@@ -57,12 +57,22 @@ public enum VioTV {
         VioTVManager.shared.connect(broadcastId: broadcastId, platform: platform, tvDeviceId: tvDeviceId)
     }
 
+    /// Convenience entry point that uses the broadcastId loaded from `vio-config.json`
+    /// (`broadcastId` key). Falls back to `defaultCampaignId` stringified only if
+    /// `broadcastId` is absent — that fallback is legacy and will not resolve a real
+    /// broadcast on v2 backends, so prefer `connect(broadcastId:)` in host apps.
     public static func connect() {
-        guard let campaignId = VioTVConfiguration.shared.defaultCampaignId else {
-            print("[VioTV] Missing default campaignId. Call configure(defaultCampaignId:) or connect(broadcastId:).")
+        let config = VioTVConfiguration.shared
+        if let broadcastId = config.defaultBroadcastId, !broadcastId.isEmpty {
+            connect(broadcastId: broadcastId)
             return
         }
-        connect(broadcastId: String(campaignId))
+        if let campaignId = config.defaultCampaignId {
+            print("[VioTV] No broadcastId in config — falling back to campaignId \(campaignId) as broadcastId. Set `broadcastId` in vio-config.json or call connect(broadcastId:) explicitly.")
+            connect(broadcastId: String(campaignId))
+            return
+        }
+        print("[VioTV] Missing broadcastId and campaignId. Set `broadcastId` in vio-config.json or call connect(broadcastId:).")
     }
 
     public static func disconnect() {

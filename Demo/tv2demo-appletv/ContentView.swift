@@ -3,6 +3,8 @@ import VioTV
 
 struct ContentView: View {
     var body: some View {
-        TVPlayerView()
+        NavigationStack {
+            BroadcastPickerView()
+        }
     }
 }

@@ -13,6 +13,13 @@ struct InteractiveAds_vioApp: App {
         VioTV.onCartIntent = { productId in
             print("[Demo] Cart intent sent for product: \(productId)")
         }
+
+        // Fires when the backend responds to /api/sdk/tv/broadcast/subscribe
+        // with `{ subscribed: false, reason: ... }` — used by the picker to
+        // visualise the "unknown broadcast" path.
+        VioTV.onSubscriptionFailed = { reason in
+            print("[Demo] Subscribe soft-miss: \(reason.rawValue) — SDK stays idle, no overlay will render")
+        }
     }
 
     var body: some Scene {

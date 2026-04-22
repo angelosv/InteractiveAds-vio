@@ -9,6 +9,12 @@ import Foundation
 public struct VioTVSponsor: Codable, Equatable, Identifiable, Sendable {
     public let id: Int
     public let name: String
+    /// Square brand mark — preferred for overlays and product cards. The backend
+    /// guarantees a non-null value for any sponsor it dispatches shoppable ads for;
+    /// nil here only when the sponsor has been registered purely for branding.
+    public let avatarUrl: String?
+    /// Wide horizontal logo — for sponsor intros / full-screen branding. Not a
+    /// fallback for ``avatarUrl``; the two serve different surfaces.
     public let logoUrl: String?
     public let primaryColor: String?
     public let secondaryColor: String?
@@ -29,6 +35,7 @@ public struct VioTVSponsor: Codable, Equatable, Identifiable, Sendable {
     public init(
         id: Int,
         name: String,
+        avatarUrl: String? = nil,
         logoUrl: String? = nil,
         primaryColor: String? = nil,
         secondaryColor: String? = nil,
@@ -36,6 +43,7 @@ public struct VioTVSponsor: Codable, Equatable, Identifiable, Sendable {
     ) {
         self.id = id
         self.name = name
+        self.avatarUrl = avatarUrl
         self.logoUrl = logoUrl
         self.primaryColor = primaryColor
         self.secondaryColor = secondaryColor

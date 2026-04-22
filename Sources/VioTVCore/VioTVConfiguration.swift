@@ -33,6 +33,11 @@ public struct VioTVFileConfiguration: Codable {
     /// the SDK uses sponsor-specific keys from `/api/sdk/tv/broadcast/subscribe`.
     public let commerceApiKey: String?
     public let campaignId: Int?
+    /// Partner-internal broadcast identifier (e.g. `"barcelona-psg-2026-03-03"`). When set,
+    /// `VioTV.connect()` without args uses this as the `broadcastId` sent to
+    /// `POST /api/sdk/tv/broadcast/subscribe`. Aligned with the backend nomenclature
+    /// (`broadcasts.broadcast_id`) — no longer aliased as `contentId`.
+    public let broadcastId: String?
     public let userId: String?
     public let environment: String?
     public let backendURL: String?
@@ -46,6 +51,7 @@ public struct VioTVFileConfiguration: Codable {
         apiKey: String,
         commerceApiKey: String? = nil,
         campaignId: Int? = nil,
+        broadcastId: String? = nil,
         userId: String? = nil,
         environment: String? = nil,
         backendURL: String? = nil,
@@ -58,6 +64,7 @@ public struct VioTVFileConfiguration: Codable {
         self.apiKey = apiKey
         self.commerceApiKey = commerceApiKey
         self.campaignId = campaignId
+        self.broadcastId = broadcastId
         self.userId = userId
         self.environment = environment
         self.backendURL = backendURL
@@ -69,7 +76,7 @@ public struct VioTVFileConfiguration: Codable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case apiKey, commerceApiKey, campaignId, userId, environment
+        case apiKey, commerceApiKey, campaignId, broadcastId, userId, environment
         case backendURL = "backendUrl"
         case webSocketBaseURL = "webSocketUrl"
         case commerceURL = "commerceUrl"
@@ -121,6 +128,9 @@ public final class VioTVConfiguration {
     public private(set) var commerceApiKey: String = ""
     public private(set) var userId: String = ""
     public private(set) var defaultCampaignId: Int?
+    /// Partner-internal broadcast id loaded from `vio-config.json` (`contentId`). Preferred
+    /// argument for `VioTV.connect()` when the host app doesn't pass an explicit broadcastId.
+    public private(set) var defaultBroadcastId: String?
     public private(set) var environment: VioTVEnvironment = .development
     public private(set) var backendURLOverride: String?
     public private(set) var webSocketBaseURLOverride: String?
@@ -172,6 +182,7 @@ public final class VioTVConfiguration {
         userId: String = "",
         environment: VioTVEnvironment = .development,
         defaultCampaignId: Int? = nil,
+        defaultBroadcastId: String? = nil,
         backendURLOverride: String? = nil,
         webSocketBaseURLOverride: String? = nil,
         commerceURLOverride: String? = nil
@@ -181,10 +192,12 @@ public final class VioTVConfiguration {
         self.userId = userId
         self.environment = environment
         self.defaultCampaignId = defaultCampaignId
+        self.defaultBroadcastId = defaultBroadcastId
         self.backendURLOverride = sanitize(url: backendURLOverride)
         self.webSocketBaseURLOverride = sanitize(url: webSocketBaseURLOverride)
         self.commerceURLOverride = sanitize(url: commerceURLOverride)
-        print("[VioTV] Configured - env: \(environment.rawValue), campaign: \(defaultCampaignId.map(String.init) ?? "(none)"), ws: \(webSocketBaseURL)")
+        let broadcastLabel = defaultBroadcastId ?? defaultCampaignId.map(String.init) ?? "(none)"
+        print("[VioTV] Configured - env: \(environment.rawValue), broadcast: \(broadcastLabel), ws: \(webSocketBaseURL)")
     }
 
     public func applyFileConfiguration(_ fileConfig: VioTVFileConfiguration, userIdOverride: String? = nil) {
@@ -199,6 +212,7 @@ public final class VioTVConfiguration {
             userId: userIdOverride ?? fileConfig.userId ?? "",
             environment: env,
             defaultCampaignId: fileConfig.campaignId,
+            defaultBroadcastId: fileConfig.broadcastId,
             backendURLOverride: backendOverride,
             webSocketBaseURLOverride: wsOverride,
             commerceURLOverride: commerceOverride
@@ -235,6 +249,7 @@ public final class VioTVConfiguration {
             userId: userId,
             environment: env,
             defaultCampaignId: campaignId,
+            defaultBroadcastId: ProcessInfo.processInfo.environment["VIO_BROADCAST_ID"] ?? defaultBroadcastId,
             backendURLOverride: ProcessInfo.processInfo.environment["VIO_BACKEND_URL"],
             webSocketBaseURLOverride: ProcessInfo.processInfo.environment["VIO_WS_BASE_URL"],
             commerceURLOverride: ProcessInfo.processInfo.environment["VIO_COMMERCE_URL"]

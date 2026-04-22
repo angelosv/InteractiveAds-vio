@@ -26,6 +26,17 @@ final class VioTVWebSocketManager: ObservableObject {
         receiveMessages()
     }
 
+    private func sendPong() {
+        let payload = ["type": "pong"]
+        guard
+            let data = try? JSONSerialization.data(withJSONObject: payload),
+            let text = String(data: data, encoding: .utf8)
+        else { return }
+        webSocketTask?.send(.string(text)) { error in
+            if let error = error { print("[VioTV] WS pong send error: \(error)") }
+        }
+    }
+
     /// After the WS upgrades, announce which user this socket belongs to so the
     /// backend can route user-targeted events (e.g. cart_intent going to this
     /// user's mobile device) back through the same node via `wsUserMap`.
@@ -77,13 +88,20 @@ final class VioTVWebSocketManager: ObservableObject {
     }
 
     private func handleTextMessage(_ text: String) {
-        print("[VioTV] WS raw: \(text.prefix(200))")
         guard let data = text.data(using: .utf8) else { return }
         do {
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let type = json["type"] as? String,
-               type == "product" || type == "shoppable_ad" {
+            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let type = json["type"] as? String else { return }
 
+            // App-level keep-alive: backend sends {"type":"ping"} every ~20s and closes the
+            // socket after 3 unanswered ones. Reply with a pong instead of printing raw noise.
+            if type == "ping" {
+                sendPong()
+                return
+            }
+
+            print("[VioTV] WS raw: \(text.prefix(200))")
+            if type == "product" || type == "shoppable_ad" {
                 if type == "shoppable_ad" {
                     let event = try JSONDecoder().decode(ShoppableAdEvent.self, from: data)
                     DispatchQueue.main.async {

@@ -93,8 +93,11 @@ struct VioTVShoppableProductCard: View {
 
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: 6) {
-                            if let logoUrl = sponsor?.logoUrl {
-                                AsyncImage(url: URL(string: logoUrl)) { phase in
+                            // Prefer avatarUrl (square brand mark) — the backend rejects
+                            // shoppable_ad dispatches for sponsors without one. logoUrl is
+                            // kept as a fallback for legacy events and sponsor-intro surfaces.
+                            if let brandUrl = sponsor?.avatarUrl ?? sponsor?.logoUrl {
+                                AsyncImage(url: URL(string: brandUrl)) { phase in
                                     if case .success(let img) = phase {
                                         img.resizable().aspectRatio(contentMode: .fill)
                                     } else {

@@ -121,12 +121,26 @@ public struct ShoppableProduct: Codable {
 }
 
 public struct ShoppableSponsor: Codable {
+    public let id: Int?
     public let name: String
+    /// Square brand mark — what the overlay / product card renders. Always set when
+    /// the backend dispatches a shoppable_ad (the helper rejects sponsors with no avatar).
+    public let avatarUrl: String?
+    /// Wide horizontal brand logo — used for sponsor intros or full-screen surfaces.
+    /// May be nil; do not use as a substitute for ``avatarUrl`` in product cards.
     public let logoUrl: String?
     public let primaryColor: String?
 
-    public init(name: String, logoUrl: String? = nil, primaryColor: String? = nil) {
+    public init(
+        id: Int? = nil,
+        name: String,
+        avatarUrl: String? = nil,
+        logoUrl: String? = nil,
+        primaryColor: String? = nil
+    ) {
+        self.id = id
         self.name = name
+        self.avatarUrl = avatarUrl
         self.logoUrl = logoUrl
         self.primaryColor = primaryColor
     }

@@ -127,15 +127,32 @@ All endpoints authenticate with `X-API-Key: <client_app.apiKey>`.
 ```json
 {
   "type": "shoppable_ad",
+  "broadcastId": "barcelona-psg-2026-03-03",
   "campaignId": 36,
+  "sponsorId": 3,
+  "activationId": 10,
   "product": {
     "id": "408895",
     "title": "Samsung 85 Neo QLED 4K TV",
     "images": [{ "url": "https://...", "order": 0 }],
     "price": { "amount": 17990, "amount_incl_taxes": 17990, "currency_code": "NOK" }
+  },
+  "sponsor": {
+    "id": 3,
+    "name": "Elkjøp",
+    "avatarUrl": "https://.../avatar.jpeg",
+    "logoUrl":   "https://.../logo.png",
+    "primaryColor": "#f7b23b"
   }
 }
 ```
+
+**Sponsor shape** — both `avatarUrl` (square brand mark, rendered inside the overlay /
+product card) and `logoUrl` (wide horizontal logo, for sponsor intros) ship. The backend
+rejects shoppable_ad dispatches for sponsors without an avatar (`422
+SPONSOR_MISSING_AVATAR`), so `avatarUrl` is effectively non-null at render time. The
+overlay still falls back to `logoUrl` defensively for legacy events pre-dating this
+guarantee.
 
 ## Backend product event (mapped internally)
 
@@ -168,9 +185,15 @@ All endpoints authenticate with `X-API-Key: <client_app.apiKey>`.
 Expected keys:
 
 - `apiKey` (required)
+- `broadcastId` (**preferred**) — partner-internal broadcast id (e.g. `"barcelona-psg-2026-03-03"`).
+  Stored as `VioTVConfiguration.shared.defaultBroadcastId`. When set, bare `VioTV.connect()`
+  uses it as the `broadcastId` argument to `POST /api/sdk/tv/broadcast/subscribe`. The key
+  name matches the backend's `broadcasts.broadcast_id` column — was previously aliased as
+  `contentId`, renamed for consistency with `socket-server` and the mobile SDK.
 - `commerceApiKey` (**deprecated / dev-only** — production commerce keys come per-sponsor
   from `/api/sdk/tv/broadcast/subscribe`. Kept as an optional fallback for offline dev work.)
-- `campaignId` (optional but recommended; used only when the host calls bare `VioTV.connect()`)
+- `campaignId` (**legacy fallback**) — only consulted if `broadcastId` is absent. Will not
+  resolve a real broadcast in v2; kept for back-compat with the old v1 demo flow.
 - `userId` (optional; host usually sets via `configureFromBundle(userIdOverride:)`)
 - `environment` (`development` or `testing`, optional)
 - optional endpoint overrides:
@@ -181,9 +204,11 @@ Expected keys:
   - `devWebSocketBaseURL`
   - `devCommerceURL`
 
-If `campaignId` is missing, consumers must call `VioTV.connect(broadcastId:)` explicitly.
-Recommended usage from host apps is always `connect(broadcastId:)` with the partner-internal
-broadcast id — that's what the subscribe endpoint validates against.
+`VioTV.connect()` resolution order:
+1. If the caller passes `VioTV.connect(broadcastId:)` explicitly, that value wins.
+2. Otherwise, `broadcastId` from `vio-config.json`.
+3. Otherwise, `campaignId` stringified (legacy — logs a warning).
+4. Otherwise, no-op with a console note.
 
 Environment values accepted by Core:
 
@@ -223,6 +248,40 @@ Default endpoints:
 - Never log the raw `commerce.apiKey` — they're sponsor-sensitive.
 - `VioTVSessionManager` is the single owner of heartbeat / end; don't send `/session/*` from
   anywhere else.
+
+## Demo app — exercising the subscribe soft-miss path
+
+`Demo/tv2demo-appletv` is modelled after a real TV2-style integration: the bundled
+`vio-config.json` carries **only credentials** (`apiKey`, `environment`, endpoint
+overrides) — intentionally no `broadcastId`, because a real TV app receives its
+broadcast ids at runtime from its own catalog backend, not from a local config file.
+
+The app boots into `BroadcastPickerView` (wired from `ContentView`). The picker
+offers two cards — each card owns the id it would have received from the host's
+catalog — and both navigate to the same `TVPlayerView` with different
+`broadcastId` values:
+
+- **Broadcast registrado** → `"barcelona-psg-2026-03-03"`
+  Backend responds `{ subscribed: true, ... }`; WebSocket opens, heartbeat starts,
+  overlay renders on shoppable_ad events.
+
+- **Broadcast desconocido** → `"broadcast-no-existe-demo"`
+  Backend responds `{ subscribed: false, reason: "broadcast_not_registered_for_client_app" }`.
+  `InteractiveAds_vioApp` has `VioTV.onSubscriptionFailed` wired, so the soft-miss
+  reason is printed to the console; the SDK stays idle, the WebSocket is never opened,
+  and no overlay will ever appear. Use this to verify partner apps don't crash when
+  Vio doesn't recognise the partner's content id.
+
+`TVPlayerView` accepts `broadcastId: String` as an init parameter and calls
+`VioTV.connect(broadcastId: broadcastId)` in `onAppear` + `VioTV.disconnect()` in
+`onDisappear`. It also exposes a top-left "Volver" button that uses
+`@Environment(\.dismiss)` to pop back to the picker — tapping it triggers
+`onDisappear`, which closes the session cleanly (WS shut, `POST /session/end`).
+
+The `defaultBroadcastId` path (loaded from `vio-config.json`'s `broadcastId` key)
+still exists in the SDK as a convenience for simpler apps that hardcode a single
+broadcast, but the TV2 demo doesn't use it — exactly so the integration surface
+matches what a real partner would do.
 
 ## Validation checklist before PR
 
