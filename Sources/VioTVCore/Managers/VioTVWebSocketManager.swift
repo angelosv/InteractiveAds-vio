@@ -6,10 +6,12 @@ final class VioTVWebSocketManager: ObservableObject {
 
     private var webSocketTask: URLSessionWebSocketTask?
     private var currentUrlString: String?
+    private var identifyUserId: String?
     private var reconnectTask: Task<Void, Never>?
 
-    func connect(to urlString: String) {
+    func connect(to urlString: String, identifyUserId: String?) {
         currentUrlString = urlString
+        self.identifyUserId = identifyUserId
         openConnection(to: urlString)
     }
 
@@ -20,7 +22,26 @@ final class VioTVWebSocketManager: ObservableObject {
         webSocketTask = session.webSocketTask(with: url)
         webSocketTask?.resume()
         print("[VioTV] WebSocket connected to \(urlString)")
+        sendIdentifyIfNeeded()
         receiveMessages()
+    }
+
+    /// After the WS upgrades, announce which user this socket belongs to so the
+    /// backend can route user-targeted events (e.g. cart_intent going to this
+    /// user's mobile device) back through the same node via `wsUserMap`.
+    private func sendIdentifyIfNeeded() {
+        guard let userId = identifyUserId, !userId.isEmpty else { return }
+        let payload = ["type": "identify", "userId": userId]
+        guard
+            let data = try? JSONSerialization.data(withJSONObject: payload),
+            let text = String(data: data, encoding: .utf8)
+        else { return }
+        webSocketTask?.send(.string(text)) { [weak self] error in
+            if let error = error {
+                print("[VioTV] WS identify send error: \(error)")
+                _ = self
+            }
+        }
     }
 
     func disconnect() {

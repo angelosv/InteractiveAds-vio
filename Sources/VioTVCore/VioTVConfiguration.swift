@@ -28,7 +28,10 @@ public enum VioTVEnvironment: String, Codable {
 
 public struct VioTVFileConfiguration: Codable {
     public let apiKey: String
-    public let commerceApiKey: String
+    /// Only used as a **dev-only fallback** when the SDK hasn't run `connect(broadcastId:)` yet
+    /// or the backend response didn't include a primary-sponsor commerce block. In production
+    /// the SDK uses sponsor-specific keys from `/api/sdk/tv/broadcast/subscribe`.
+    public let commerceApiKey: String?
     public let campaignId: Int?
     public let userId: String?
     public let environment: String?
@@ -41,7 +44,7 @@ public struct VioTVFileConfiguration: Codable {
 
     public init(
         apiKey: String,
-        commerceApiKey: String,
+        commerceApiKey: String? = nil,
         campaignId: Int? = nil,
         userId: String? = nil,
         environment: String? = nil,
@@ -112,6 +115,9 @@ public final class VioTVConfiguration {
     public static let shared = VioTVConfiguration()
 
     public private(set) var apiKey: String = ""
+    /// **Dev-only fallback** commerce key. Production commerce keys come per-sponsor from
+    /// `/api/sdk/tv/broadcast/subscribe` and are stored in ``primarySponsor`` / ``secondarySponsors``.
+    /// Resolve with ``commerce(forSponsorId:)``.
     public private(set) var commerceApiKey: String = ""
     public private(set) var userId: String = ""
     public private(set) var defaultCampaignId: Int?
@@ -119,6 +125,14 @@ public final class VioTVConfiguration {
     public private(set) var backendURLOverride: String?
     public private(set) var webSocketBaseURLOverride: String?
     public private(set) var commerceURLOverride: String?
+
+    // Multi-sponsor state populated by `/api/sdk/tv/broadcast/subscribe`.
+    public private(set) var primarySponsor: VioTVSponsor?
+    public private(set) var secondarySponsors: [VioTVSponsor] = []
+    /// tv_sessions row id returned by the backend. Used by heartbeat + end.
+    public internal(set) var currentSessionId: Int?
+    /// end_users.id for the connected viewer. Used as foreign key on cart_intents.
+    public internal(set) var currentEndUserId: Int?
 
     private init() {}
 
@@ -134,9 +148,27 @@ public final class VioTVConfiguration {
         webSocketBaseURLOverride ?? environment.defaultWebSocketBaseURL
     }
 
+    /// Look up any sponsor by id — primary first, then secondaries.
+    public func sponsor(withId id: Int) -> VioTVSponsor? {
+        if primarySponsor?.id == id { return primarySponsor }
+        return secondarySponsors.first { $0.id == id }
+    }
+
+    /// Commerce credentials for a specific sponsor id from the most recent subscribe response.
+    /// Falls back to the local `commerceApiKey` (dev-only) when no sponsor matches.
+    public func commerce(forSponsorId id: Int?) -> VioTVSponsor.CommerceBlock? {
+        if let id, let block = sponsor(withId: id)?.commerce {
+            return block
+        }
+        if !commerceApiKey.isEmpty {
+            return VioTVSponsor.CommerceBlock(apiKey: commerceApiKey)
+        }
+        return primarySponsor?.commerce
+    }
+
     public func configure(
         apiKey: String,
-        commerceApiKey: String,
+        commerceApiKey: String = "",
         userId: String = "",
         environment: VioTVEnvironment = .development,
         defaultCampaignId: Int? = nil,
@@ -163,7 +195,7 @@ public final class VioTVConfiguration {
 
         configure(
             apiKey: fileConfig.apiKey,
-            commerceApiKey: fileConfig.commerceApiKey,
+            commerceApiKey: fileConfig.commerceApiKey ?? "",
             userId: userIdOverride ?? fileConfig.userId ?? "",
             environment: env,
             defaultCampaignId: fileConfig.campaignId,
@@ -171,6 +203,23 @@ public final class VioTVConfiguration {
             webSocketBaseURLOverride: wsOverride,
             commerceURLOverride: commerceOverride
         )
+    }
+
+    /// Populate ``primarySponsor`` / ``secondarySponsors`` / ``currentSessionId`` from the
+    /// response of `POST /api/sdk/tv/broadcast/subscribe`.
+    public func applySubscribeResponse(_ response: VioTVSubscribeResponse) {
+        self.primarySponsor = response.primarySponsor
+        self.secondarySponsors = response.secondarySponsors ?? []
+        self.currentSessionId = response.sessionId
+        self.currentEndUserId = response.endUserId
+    }
+
+    /// Clear multi-sponsor state on disconnect.
+    public func clearSubscribeState() {
+        self.primarySponsor = nil
+        self.secondarySponsors = []
+        self.currentSessionId = nil
+        self.currentEndUserId = nil
     }
 
     public func loadFromEnvironment() {

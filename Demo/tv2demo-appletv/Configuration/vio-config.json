@@ -1,11 +1,10 @@
 {
   "apiKey": "tv2_api_key_91b4fbf634af4bc5",
-  "commerceApiKey": "KCXF10Y-W5T4PCR-GG5119A-Z64SQ9S",
   "environment": "development",
   "backendUrl": "https://api-local-angelo.vio.live/",
   "webSocketUrl": "wss://api-local-angelo.vio.live/ws",
   "commerceUrl": "https://graph-ql-dev.vio.live/graphql",
   "campaignId": 36,
-  "contentId": "barcelona-psg-2026-03-03",
+  "contentId": "tv2-eliteserien-live-2026-03-08",
   "country": "NO"
 }

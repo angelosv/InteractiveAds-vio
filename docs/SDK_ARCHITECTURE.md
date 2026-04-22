@@ -2,6 +2,8 @@
 
 This document explains how the consolidated SDK is structured, how data flows at runtime, and where to add new behavior safely.
 
+**Backend contract**: this SDK pairs with the backend in `socket-server` (Vio backend monorepo). See `socket-server/docs/multi-sponsor-architecture.md` §7.4 for the matching multi-sponsor design and the endpoint specs.
+
 ## Design goals
 
 - Mirror the modular style of `VioSwiftSDK`.
@@ -70,18 +72,53 @@ Rules:
 - Should stay thin and orchestration-focused.
 - Business logic should live in module-specific targets.
 
-## Runtime sequence
+## Runtime sequence (v2 — multi-sponsor subscribe flow)
 
-1. App calls `VioTV.configure(...)` or `VioTV.configureFromBundle(...)`.
-2. App starts runtime with `VioTV.connect(...)`.
-3. Core WebSocket manager receives backend messages:
-   - accepts `type: "shoppable_ad"` directly
-   - accepts `type: "product"` and maps to `ShoppableAdEvent`
-4. Core publishes `activeAd`.
-5. UI overlay renders when `activeAd != nil`.
-6. On CTA tap, UI calls `sendCartIntent`.
-7. Core POSTs cart-intent and only reports success callback on 2xx.
-8. Facade may enrich incomplete product payloads through Commerce.
+1. App calls `VioTV.configureFromBundle(userIdOverride:)` once at launch.
+   Local config now carries **only** `apiKey` + `userId` (optional) + environment.
+2. App calls `VioTV.connect(broadcastId:)` with the partner's internal broadcast id.
+3. SDK fires one request → `POST /api/sdk/tv/broadcast/subscribe` (see §Endpoints).
+   - `subscribed: true` → SDK caches `primarySponsor` + `secondarySponsors` + `sessionId`
+     in `VioTVConfiguration`, opens the WebSocket with the returned `wsUrl`, sends
+     `{ "type": "identify", "userId": externalUserId }`, and starts a 60s heartbeat.
+   - `subscribed: false` → SDK stays idle. Optional `VioTV.onSubscriptionFailed(reason)`.
+4. WS messages accepted:
+   - `type: "shoppable_ad"` — decoded as `ShoppableAdEvent` (includes `activationId` +
+     `sponsorId` in v2).
+   - `type: "product"` (legacy) — mapped to `ShoppableAdEvent` for backwards compat.
+5. Core publishes `activeAd`.
+6. Facade auto-enriches when product payload is incomplete — now it **routes** to
+   the correct sponsor's Commerce GraphQL key via
+   `VioTVConfiguration.shared.commerce(forSponsorId: event.sponsorId)`.
+7. UI overlay renders when `activeAd != nil`.
+8. On remote OK / tap, UI calls `VioTVManager.sendCartIntent(...)` which POSTs to
+   **`/api/sdk/tv/cart-intent`** (not the legacy mobile endpoint) with
+   `activationId` + `sponsorId` drawn from `activeAd`. Backend persists a
+   `cart_intents` row with `source_activation_id = activationId` **and** forwards
+   the envelope to the user's mobile device via the same delivery tree as the
+   mobile cart-intent (local WS → Redis cluster → partner webhook → APNs).
+9. `VioTV.disconnect()` closes the WS, stops the heartbeat, and POSTs
+   `/api/sdk/tv/session/end` to mark the `tv_sessions` row closed.
+
+## Endpoints the SDK consumes
+
+All endpoints authenticate with `X-API-Key: <client_app.apiKey>`.
+
+- **`POST /api/sdk/tv/broadcast/subscribe`** — combined bootstrap. Request body:
+  `{ broadcastId, externalUserId, platform, tvDeviceId? }`. Response either
+  `{ subscribed: true, campaignId, sessionId, endUserId, wsUrl, primarySponsor, secondarySponsors, capabilities }`
+  or `{ subscribed: false, reason }` where reason is one of
+  `broadcast_not_registered_for_client_app`, `campaign_has_no_primary_sponsor`,
+  `tv_not_enabled_for_this_platform`.
+- **`POST /api/sdk/tv/session/heartbeat`** — body `{ sessionId }`. Called every 60s.
+- **`POST /api/sdk/tv/session/end`** — body `{ sessionId }`. Called on `disconnect()`.
+- **`POST /api/sdk/tv/cart-intent`** — body
+  `{ externalUserId, productId, campaignId, activationId?, sponsorId?, platform? }`.
+  Backend persists and forwards.
+- **Commerce GraphQL** (direct, not through Vio) — the SDK calls the endpoint returned
+  in the subscribe response (`endpoints.commerceGraphQL` equivalent, stored as
+  `VioTVConfiguration.shared.commerceURL`). Authorisation header is the sponsor's
+  `commerce.apiKey` resolved via `VioTVConfiguration.shared.commerce(forSponsorId:)`.
 
 ## Supported backend event shapes
 
@@ -130,10 +167,11 @@ Rules:
 
 Expected keys:
 
-- `apiKey`
-- `commerceApiKey`
-- `campaignId` (optional but recommended)
-- `userId` (optional)
+- `apiKey` (required)
+- `commerceApiKey` (**deprecated / dev-only** — production commerce keys come per-sponsor
+  from `/api/sdk/tv/broadcast/subscribe`. Kept as an optional fallback for offline dev work.)
+- `campaignId` (optional but recommended; used only when the host calls bare `VioTV.connect()`)
+- `userId` (optional; host usually sets via `configureFromBundle(userIdOverride:)`)
 - `environment` (`development` or `testing`, optional)
 - optional endpoint overrides:
   - `backendUrl`
@@ -144,6 +182,8 @@ Expected keys:
   - `devCommerceURL`
 
 If `campaignId` is missing, consumers must call `VioTV.connect(broadcastId:)` explicitly.
+Recommended usage from host apps is always `connect(broadcastId:)` with the partner-internal
+broadcast id — that's what the subscribe endpoint validates against.
 
 Environment values accepted by Core:
 
@@ -164,8 +204,9 @@ Default endpoints:
 ## Where to implement changes
 
 - New transport/event parsing: `VioTVCore/Managers/VioTVWebSocketManager.swift`
-- New shared data fields: `VioTVCore/Models/VioTVModels.swift`
-- New cart-intent behavior: `VioTVCore/VioTVManager.swift`
+- New shared data fields: `VioTVCore/Models/VioTVModels.swift` / `VioTVCore/Models/VioTVSponsor.swift`
+- New subscribe / cart-intent behavior: `VioTVCore/VioTVManager.swift`
+- New session lifecycle (heartbeat / end): `VioTVCore/Managers/VioTVSessionManager.swift`
 - New Commerce fields/query: `VioTVCommerce/VioTVCommerceService.swift`
 - New overlay visual/interaction: `VioTVUI/VioTVShoppableOverlay.swift`
 - New public API surface: `VioTV/VioTV.swift`
@@ -177,6 +218,11 @@ Default endpoints:
 - Do not reintroduce config parsing in demo views.
 - Do not trigger `onCartIntent` on failed HTTP responses.
 - Preserve `campaignId` from incoming events to avoid invalid cart-intent routes.
+- `cart-intent` must POST to `/api/sdk/tv/cart-intent` (not the legacy mobile endpoint) so the
+  backend persists with `source_activation_id` and forwards to the mobile.
+- Never log the raw `commerce.apiKey` — they're sponsor-sensitive.
+- `VioTVSessionManager` is the single owner of heartbeat / end; don't send `/session/*` from
+  anywhere else.
 
 ## Validation checklist before PR
 

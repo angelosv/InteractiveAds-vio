@@ -6,10 +6,23 @@ public final class VioTVCommerceService {
 
     private init() {}
 
-    public func fetchProduct(id: String) async -> ShoppableProduct? {
+    /// Fetches a product from Commerce GraphQL using the provided `commerceApiKey`.
+    ///
+    /// Pass the key of the sponsor that emitted the shoppable_ad — resolve with
+    /// `VioTVConfiguration.shared.commerce(forSponsorId:)` using the `sponsorId`
+    /// on the WS event. If `commerceApiKey` is `nil` the method falls back to the
+    /// dev-only local key (`VioTVConfiguration.shared.commerceApiKey`) for
+    /// backwards compatibility; in production this path should never hit.
+    public func fetchProduct(id: String, commerceApiKey: String? = nil) async -> ShoppableProduct? {
         let config = VioTVConfiguration.shared
         guard let url = URL(string: config.commerceURL) else {
             print("[VioTV] Invalid commerce URL")
+            return nil
+        }
+
+        let resolvedKey = commerceApiKey ?? config.commerceApiKey
+        guard !resolvedKey.isEmpty else {
+            print("[VioTV] Commerce fetchProduct skipped — no commerceApiKey (sponsor is visual-only or SDK not subscribed yet)")
             return nil
         }
 
@@ -34,7 +47,7 @@ public final class VioTVCommerceService {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(config.commerceApiKey, forHTTPHeaderField: "Authorization")
+        request.setValue(resolvedKey, forHTTPHeaderField: "Authorization")
         request.httpBody = try? JSONSerialization.data(withJSONObject: [
             "query": query,
             "variables": ["productIds": [intId]]

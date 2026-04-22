@@ -14,16 +14,23 @@ public enum VioTV {
         set { VioTVManager.shared.onCartIntent = newValue }
     }
 
+    /// Invoked when `POST /api/sdk/tv/broadcast/subscribe` responds
+    /// `{ subscribed: false, reason }`. Set this if the host app wants to log
+    /// or react when Vio doesn't recognise the partner-provided broadcastId.
+    /// Default: nil (SDK stays silent — host sees no error).
+    public static var onSubscriptionFailed: ((VioTVSubscribeFailureReason) -> Void)? {
+        get { VioTVManager.shared.onSubscriptionFailed }
+        set { VioTVManager.shared.onSubscriptionFailed = newValue }
+    }
+
     public static func configure(
         apiKey: String,
-        commerceApiKey: String,
         userId: String = "",
         environment: VioTVEnvironment = .development,
         defaultCampaignId: Int? = nil
     ) {
         VioTVConfiguration.shared.configure(
             apiKey: apiKey,
-            commerceApiKey: commerceApiKey,
             userId: userId,
             environment: environment,
             defaultCampaignId: defaultCampaignId
@@ -41,8 +48,13 @@ public enum VioTV {
         setupCommerceEnrichment()
     }
 
-    public static func connect(broadcastId: String) {
-        VioTVManager.shared.connect(broadcastId: broadcastId)
+    /// Entry point once the host app knows which broadcast is playing.
+    /// The SDK performs `POST /api/sdk/tv/broadcast/subscribe`. On success:
+    /// opens the WebSocket, sends the identify message, and starts a 60s
+    /// session heartbeat. On soft-miss the SDK stays idle — the host sees
+    /// nothing unless it set `onSubscriptionFailed`.
+    public static func connect(broadcastId: String, platform: String = "apple-tv", tvDeviceId: String? = nil) {
+        VioTVManager.shared.connect(broadcastId: broadcastId, platform: platform, tvDeviceId: tvDeviceId)
     }
 
     public static func connect() {
@@ -63,7 +75,12 @@ public enum VioTV {
             .sink { event in
                 guard shouldEnrichFromCommerce(event: event) else { return }
                 Task {
-                    guard let enrichedProduct = await VioTVCommerceService.shared.fetchProduct(id: event.product.id) else {
+                    // Route to the correct sponsor's commerce key using sponsorId on the event.
+                    let commerceKey = VioTVConfiguration.shared.commerce(forSponsorId: event.sponsorId)?.apiKey
+                    guard let enrichedProduct = await VioTVCommerceService.shared.fetchProduct(
+                        id: event.product.id,
+                        commerceApiKey: commerceKey
+                    ) else {
                         return
                     }
                     await MainActor.run {

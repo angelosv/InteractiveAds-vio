@@ -8,6 +8,13 @@ public struct ShoppableAdEvent: Codable {
     public let timestamp: Double?
     public let discountBadge: String?
     public let campaignId: Int?
+    /// Backend-issued id of the row in `shoppable_ad_activations`. The TV SDK echoes this
+    /// back in `sendCartIntent` as `activationId` so the backend can stamp
+    /// `cart_intents.source_activation_id` and close the attribution chain.
+    public let activationId: Int?
+    /// Which sponsor of the campaign owns this dispatch. Used by the SDK to resolve
+    /// the right `commerceApiKey` from `VioTVConfiguration.commerce(forSponsorId:)`.
+    public let sponsorId: Int?
 
     public init(
         type: String,
@@ -16,7 +23,9 @@ public struct ShoppableAdEvent: Codable {
         sponsor: ShoppableSponsor? = nil,
         timestamp: Double? = nil,
         discountBadge: String? = nil,
-        campaignId: Int? = nil
+        campaignId: Int? = nil,
+        activationId: Int? = nil,
+        sponsorId: Int? = nil
     ) {
         self.type = type
         self.broadcastId = broadcastId
@@ -25,6 +34,8 @@ public struct ShoppableAdEvent: Codable {
         self.timestamp = timestamp
         self.discountBadge = discountBadge
         self.campaignId = campaignId
+        self.activationId = activationId
+        self.sponsorId = sponsorId
     }
 
     public func withProduct(_ product: ShoppableProduct) -> ShoppableAdEvent {
@@ -35,7 +46,9 @@ public struct ShoppableAdEvent: Codable {
             sponsor: sponsor,
             timestamp: timestamp,
             discountBadge: discountBadge,
-            campaignId: campaignId
+            campaignId: campaignId,
+            activationId: activationId,
+            sponsorId: sponsorId
         )
     }
 }
