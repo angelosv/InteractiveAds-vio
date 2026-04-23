@@ -97,6 +97,9 @@ Rules:
    `cart_intents` row with `source_activation_id = activationId` **and** forwards
    the envelope to the user's mobile device via the same delivery tree as the
    mobile cart-intent (local WS → Redis cluster → partner webhook → APNs).
+   The partner companion SDK (`VioSwiftSDK`) consumes that envelope and opens
+   its own product-detail overlay — see `VioSwiftSDK/Documentation/CART_INTENT_FLOW.md`
+   for the full receive-side contract (dedup, per-sponsor Commerce routing).
 9. `VioTV.disconnect()` closes the WS, stops the heartbeat, and POSTs
    `/api/sdk/tv/session/end` to mark the `tv_sessions` row closed.
 
