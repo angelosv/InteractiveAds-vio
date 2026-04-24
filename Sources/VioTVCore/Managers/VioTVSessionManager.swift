@@ -36,11 +36,11 @@ internal final class VioTVSessionManager {
     // MARK: - HTTP helpers (nonisolated — the background heartbeat task calls them)
 
     private static func sendHeartbeat(sessionId: Int) async {
-        await post(path: "/api/sdk/tv/session/heartbeat", sessionId: sessionId, context: "heartbeat")
+        await post(path: "/v2/tv/session/heartbeat", sessionId: sessionId, context: "heartbeat")
     }
 
     private static func sendEnd(sessionId: Int) async {
-        await post(path: "/api/sdk/tv/session/end", sessionId: sessionId, context: "end")
+        await post(path: "/v2/tv/session/end", sessionId: sessionId, context: "end")
     }
 
     private static func post(path: String, sessionId: Int, context: String) async {
