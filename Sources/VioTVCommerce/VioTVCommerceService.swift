@@ -6,23 +6,23 @@ public final class VioTVCommerceService {
 
     private init() {}
 
-    /// Fetches a product from Commerce GraphQL using the provided `commerceApiKey`.
+    /// Fetches a product from Commerce GraphQL using the caller-provided `commerceApiKey`.
     ///
-    /// Pass the key of the sponsor that emitted the shoppable_ad — resolve with
-    /// `VioTVConfiguration.shared.commerce(forSponsorId:)` using the `sponsorId`
-    /// on the WS event. If `commerceApiKey` is `nil` the method falls back to the
-    /// dev-only local key (`VioTVConfiguration.shared.commerceApiKey`) for
-    /// backwards compatibility; in production this path should never hit.
-    public func fetchProduct(id: String, commerceApiKey: String? = nil) async -> ShoppableProduct? {
+    /// The caller MUST resolve the correct per-sponsor key via
+    /// `VioTVConfiguration.shared.commerce(forSponsorId:)?.apiKey` using the `sponsorId`
+    /// on the WS `shoppable_ad` event. No fallback to a hardcoded / globally-configured
+    /// key (v2 rule: no fallbacks, no hardcoded apiKeys). If `commerceApiKey` is nil or
+    /// empty the method returns nil without attempting the request.
+    public func fetchProduct(id: String, commerceApiKey: String?) async -> ShoppableProduct? {
         let config = VioTVConfiguration.shared
         guard let url = URL(string: config.commerceURL) else {
             print("[VioTV] Invalid commerce URL")
             return nil
         }
 
-        let resolvedKey = commerceApiKey ?? config.commerceApiKey
-        guard !resolvedKey.isEmpty else {
-            print("[VioTV] Commerce fetchProduct skipped — no commerceApiKey (sponsor is visual-only or SDK not subscribed yet)")
+        guard let resolvedKey = commerceApiKey?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !resolvedKey.isEmpty else {
+            print("[VioTV] Commerce fetchProduct skipped — sponsor has no commerce.apiKey (visual-only sponsor or subscribe response lacked the block)")
             return nil
         }
 

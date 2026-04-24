@@ -165,13 +165,15 @@ public final class VioTVConfiguration {
     }
 
     /// Commerce credentials for a specific sponsor id from the most recent subscribe response.
-    /// Falls back to the local `commerceApiKey` (dev-only) when no sponsor matches.
+    ///
+    /// Resolution order (no fallback to a hardcoded key per the v2 rule "no fallbacks to v1,
+    /// no hardcoded apiKeys"):
+    ///   1. Sponsor whose id matches — primary or any secondary — returns its `commerce` block.
+    ///   2. When `id` is `nil`, returns the primary sponsor's `commerce` block.
+    ///   3. Otherwise `nil` — caller must degrade gracefully (no commerce → no checkout).
     public func commerce(forSponsorId id: Int?) -> VioTVSponsor.CommerceBlock? {
         if let id, let block = sponsor(withId: id)?.commerce {
             return block
-        }
-        if !commerceApiKey.isEmpty {
-            return VioTVSponsor.CommerceBlock(apiKey: commerceApiKey)
         }
         return primarySponsor?.commerce
     }
