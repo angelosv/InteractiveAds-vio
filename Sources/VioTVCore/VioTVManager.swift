@@ -85,7 +85,7 @@ public final class VioTVManager: ObservableObject {
         }
 
         let config = VioTVConfiguration.shared
-        let urlString = "\(config.backendURL)/api/sdk/tv/cart-intent"
+        let urlString = "\(config.backendURL)/v2/tv/cart-intent"
         guard let url = URL(string: urlString) else {
             print("[VioTV] Invalid cart-intent URL")
             return false
@@ -140,7 +140,7 @@ public final class VioTVManager: ObservableObject {
             return .hardError("VioTV not configured — call configure / configureFromBundle first")
         }
 
-        let urlString = "\(config.backendURL)/api/sdk/tv/broadcast/subscribe"
+        let urlString = "\(config.backendURL)/v2/tv/broadcast/subscribe"
         guard let url = URL(string: urlString) else {
             return .hardError("Invalid subscribe URL: \(urlString)")
         }

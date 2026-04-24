@@ -7,29 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		170AE2422F9B740800799166 /* demo-video.f137.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 170AE2412F9B740800799166 /* demo-video.f137.mp4 */; };
 		1784D4882F71B83D00ABE130 /* VioTV in Frameworks */ = {isa = PBXBuildFile; productRef = FA0B1A0A000000000000AA01 /* VioTV */; };
 		1784D48A2F71B88D00ABE130 /* demo-video.f137.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 1784D4892F71B88D00ABE130 /* demo-video.f137.mp4 */; };
 		FA0B1A01000000000000AA01 /* InteractiveAds_vioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0B1A02000000000000AA01 /* InteractiveAds_vioApp.swift */; };
 		FA0B1A01000000000000AA02 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0B1A02000000000000AA02 /* ContentView.swift */; };
 		FA0B1A01000000000000AA03 /* TVPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0B1A02000000000000AA03 /* TVPlayerView.swift */; };
-		FA0B1A01000000000000AA09 /* BroadcastPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0B1A02000000000000AA09 /* BroadcastPickerView.swift */; };
 		FA0B1A01000000000000AA04 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0B1A02000000000000AA04 /* VideoPlayerView.swift */; };
 		FA0B1A01000000000000AA05 /* VideoControlsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0B1A02000000000000AA05 /* VideoControlsOverlay.swift */; };
 		FA0B1A01000000000000AA06 /* VideoPlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0B1A02000000000000AA06 /* VideoPlayerViewModel.swift */; };
 		FA0B1A01000000000000AA07 /* vio-config.json in Resources */ = {isa = PBXBuildFile; fileRef = FA0B1A02000000000000AA07 /* vio-config.json */; };
+		FA0B1A01000000000000AA09 /* BroadcastPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0B1A02000000000000AA09 /* BroadcastPickerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		170AE2412F9B740800799166 /* demo-video.f137.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "demo-video.f137.mp4"; sourceTree = "<group>"; };
 		1784D4892F71B88D00ABE130 /* demo-video.f137.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "demo-video.f137.mp4"; sourceTree = "<group>"; };
 		FA0B1A02000000000000AA01 /* InteractiveAds_vioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveAds_vioApp.swift; sourceTree = "<group>"; };
 		FA0B1A02000000000000AA02 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		FA0B1A02000000000000AA03 /* TVPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVPlayerView.swift; sourceTree = "<group>"; };
-		FA0B1A02000000000000AA09 /* BroadcastPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastPickerView.swift; sourceTree = "<group>"; };
 		FA0B1A02000000000000AA04 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		FA0B1A02000000000000AA05 /* VideoControlsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoControlsOverlay.swift; sourceTree = "<group>"; };
 		FA0B1A02000000000000AA06 /* VideoPlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewModel.swift; sourceTree = "<group>"; };
 		FA0B1A02000000000000AA07 /* vio-config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "vio-config.json"; sourceTree = "<group>"; };
 		FA0B1A02000000000000AA08 /* tv2demo-appletv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "tv2demo-appletv.app"; path = "TV2 Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA0B1A02000000000000AA09 /* BroadcastPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastPickerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 				FA0B1A03000000000000AA05 /* Configuration */,
 				FA0B1A03000000000000AA07 /* Frameworks */,
 				FA0B1A03000000000000AA06 /* Products */,
+				170AE2412F9B740800799166 /* demo-video.f137.mp4 */,
 			);
 			sourceTree = "<group>";
 		};
@@ -168,6 +171,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1784D48A2F71B88D00ABE130 /* demo-video.f137.mp4 in Resources */,
+				170AE2422F9B740800799166 /* demo-video.f137.mp4 in Resources */,
 				FA0B1A01000000000000AA07 /* vio-config.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
