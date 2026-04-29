@@ -26,14 +26,12 @@ public enum VioTV {
     public static func configure(
         apiKey: String,
         userId: String = "",
-        environment: VioTVEnvironment = .development,
-        defaultCampaignId: Int? = nil
+        environment: VioTVEnvironment = .development
     ) {
         VioTVConfiguration.shared.configure(
             apiKey: apiKey,
             userId: userId,
-            environment: environment,
-            defaultCampaignId: defaultCampaignId
+            environment: environment
         )
         setupCommerceEnrichment()
     }
@@ -53,26 +51,12 @@ public enum VioTV {
     /// opens the WebSocket, sends the identify message, and starts a 60s
     /// session heartbeat. On soft-miss the SDK stays idle — the host sees
     /// nothing unless it set `onSubscriptionFailed`.
+    ///
+    /// `broadcastId` is required — there is no zero-arg `connect()`. The
+    /// host app always knows which broadcast is playing; the SDK never
+    /// guesses from local config.
     public static func connect(broadcastId: String, platform: String = "apple-tv", tvDeviceId: String? = nil) {
         VioTVManager.shared.connect(broadcastId: broadcastId, platform: platform, tvDeviceId: tvDeviceId)
-    }
-
-    /// Convenience entry point that uses the broadcastId loaded from `vio-config.json`
-    /// (`broadcastId` key). Falls back to `defaultCampaignId` stringified only if
-    /// `broadcastId` is absent — that fallback is legacy and will not resolve a real
-    /// broadcast on v2 backends, so prefer `connect(broadcastId:)` in host apps.
-    public static func connect() {
-        let config = VioTVConfiguration.shared
-        if let broadcastId = config.defaultBroadcastId, !broadcastId.isEmpty {
-            connect(broadcastId: broadcastId)
-            return
-        }
-        if let campaignId = config.defaultCampaignId {
-            print("[VioTV] No broadcastId in config — falling back to campaignId \(campaignId) as broadcastId. Set `broadcastId` in vio-config.json or call connect(broadcastId:) explicitly.")
-            connect(broadcastId: String(campaignId))
-            return
-        }
-        print("[VioTV] Missing broadcastId and campaignId. Set `broadcastId` in vio-config.json or call connect(broadcastId:).")
     }
 
     public static func disconnect() {

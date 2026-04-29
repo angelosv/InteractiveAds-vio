@@ -60,7 +60,7 @@ struct VioTVShoppableProductCard: View {
         guard !confirmed else { return }
 
         Task { @MainActor in
-            let campaignId = event.campaignId ?? VioTVConfiguration.shared.defaultCampaignId
+            let campaignId = event.campaignId ?? VioTVConfiguration.shared.currentCampaignId
             guard let campaignId else {
                 print("[VioTV] Missing campaignId for cart-intent")
                 return
