@@ -1,6 +1,6 @@
 import Foundation
 
-/// Sponsor descriptor returned by `POST /api/sdk/tv/broadcast/subscribe` and
+/// Sponsor descriptor returned by `POST /v2/tv/broadcast/subscribe` and
 /// cached in ``VioTVConfiguration``.
 ///
 /// A sponsor with `commerce == nil` is **visual-only** — the SDK will render its
@@ -53,7 +53,7 @@ public struct VioTVSponsor: Codable, Equatable, Identifiable, Sendable {
 
 // MARK: - Subscribe endpoint response
 
-/// Shape of `POST /api/sdk/tv/broadcast/subscribe` response.
+/// Shape of `POST /v2/tv/broadcast/subscribe` response.
 /// Either `subscribed: true` with the full payload, or `subscribed: false` with a reason.
 public struct VioTVSubscribeResponse: Codable, Equatable, Sendable {
     public let subscribed: Bool

@@ -2,9 +2,9 @@ import Foundation
 
 /// Owns the TV session lifecycle against the Vio backend.
 ///
-/// `/api/sdk/tv/broadcast/subscribe` created the row; this manager keeps it
-/// alive via `POST /api/sdk/tv/session/heartbeat` every 60s and closes it with
-/// `POST /api/sdk/tv/session/end` on `disconnect()`.
+/// `/v2/tv/broadcast/subscribe` created the row; this manager keeps it
+/// alive via `POST /v2/tv/session/heartbeat` every 60s and closes it with
+/// `POST /v2/tv/session/end` on `disconnect()`.
 ///
 /// The host app never interacts with this directly — ``VioTVManager`` drives it.
 internal final class VioTVSessionManager {

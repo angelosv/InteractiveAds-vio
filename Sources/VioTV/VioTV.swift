@@ -14,7 +14,7 @@ public enum VioTV {
         set { VioTVManager.shared.onCartIntent = newValue }
     }
 
-    /// Invoked when `POST /api/sdk/tv/broadcast/subscribe` responds
+    /// Invoked when `POST /v2/tv/broadcast/subscribe` responds
     /// `{ subscribed: false, reason }`. Set this if the host app wants to log
     /// or react when Vio doesn't recognise the partner-provided broadcastId.
     /// Default: nil (SDK stays silent — host sees no error).
@@ -49,7 +49,7 @@ public enum VioTV {
     }
 
     /// Entry point once the host app knows which broadcast is playing.
-    /// The SDK performs `POST /api/sdk/tv/broadcast/subscribe`. On success:
+    /// The SDK performs `POST /v2/tv/broadcast/subscribe`. On success:
     /// opens the WebSocket, sends the identify message, and starts a 60s
     /// session heartbeat. On soft-miss the SDK stays idle — the host sees
     /// nothing unless it set `onSubscriptionFailed`.

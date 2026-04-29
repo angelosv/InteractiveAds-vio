@@ -7,7 +7,7 @@ public final class VioTVManager: ObservableObject {
 
     @Published public var activeAd: ShoppableAdEvent?
     public var onCartIntent: ((String) -> Void)?
-    /// Invoked when `POST /api/sdk/tv/broadcast/subscribe` responds with
+    /// Invoked when `POST /v2/tv/broadcast/subscribe` responds with
     /// `subscribed: false`. Host apps can opt in to log / surface the reason;
     /// by default the SDK stays silent so partners' apps never see errors
     /// from broadcasts that Vio simply doesn't know about.
@@ -29,7 +29,7 @@ public final class VioTVManager: ObservableObject {
     }
 
     /// Entry point for the host app. Performs the combined
-    /// `/api/sdk/tv/broadcast/subscribe` bootstrap; on success opens the WS
+    /// `/v2/tv/broadcast/subscribe` bootstrap; on success opens the WS
     /// and starts the heartbeat. On soft-miss (`subscribed: false`) the SDK
     /// stays quiet and only invokes ``onSubscriptionFailed`` if the host set it.
     public func connect(broadcastId: String, platform: String = "apple-tv", tvDeviceId: String? = nil) {
