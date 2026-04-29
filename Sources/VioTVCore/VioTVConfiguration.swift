@@ -30,12 +30,12 @@ public struct VioTVFileConfiguration: Codable {
     public let apiKey: String
     /// Only used as a **dev-only fallback** when the SDK hasn't run `connect(broadcastId:)` yet
     /// or the backend response didn't include a primary-sponsor commerce block. In production
-    /// the SDK uses sponsor-specific keys from `/api/sdk/tv/broadcast/subscribe`.
+    /// the SDK uses sponsor-specific keys from `/v2/tv/broadcast/subscribe`.
     public let commerceApiKey: String?
     public let campaignId: Int?
     /// Partner-internal broadcast identifier (e.g. `"barcelona-psg-2026-03-03"`). When set,
     /// `VioTV.connect()` without args uses this as the `broadcastId` sent to
-    /// `POST /api/sdk/tv/broadcast/subscribe`. Aligned with the backend nomenclature
+    /// `POST /v2/tv/broadcast/subscribe`. Aligned with the backend nomenclature
     /// (`broadcasts.broadcast_id`) — no longer aliased as `contentId`.
     public let broadcastId: String?
     public let userId: String?
@@ -123,7 +123,7 @@ public final class VioTVConfiguration {
 
     public private(set) var apiKey: String = ""
     /// **Dev-only fallback** commerce key. Production commerce keys come per-sponsor from
-    /// `/api/sdk/tv/broadcast/subscribe` and are stored in ``primarySponsor`` / ``secondarySponsors``.
+    /// `/v2/tv/broadcast/subscribe` and are stored in ``primarySponsor`` / ``secondarySponsors``.
     /// Resolve with ``commerce(forSponsorId:)``.
     public private(set) var commerceApiKey: String = ""
     public private(set) var userId: String = ""
@@ -136,7 +136,7 @@ public final class VioTVConfiguration {
     public private(set) var webSocketBaseURLOverride: String?
     public private(set) var commerceURLOverride: String?
 
-    // Multi-sponsor state populated by `/api/sdk/tv/broadcast/subscribe`.
+    // Multi-sponsor state populated by `/v2/tv/broadcast/subscribe`.
     public private(set) var primarySponsor: VioTVSponsor?
     public private(set) var secondarySponsors: [VioTVSponsor] = []
     /// tv_sessions row id returned by the backend. Used by heartbeat + end.
@@ -222,7 +222,7 @@ public final class VioTVConfiguration {
     }
 
     /// Populate ``primarySponsor`` / ``secondarySponsors`` / ``currentSessionId`` from the
-    /// response of `POST /api/sdk/tv/broadcast/subscribe`.
+    /// response of `POST /v2/tv/broadcast/subscribe`.
     public func applySubscribeResponse(_ response: VioTVSubscribeResponse) {
         self.primarySponsor = response.primarySponsor
         self.secondarySponsors = response.secondarySponsors ?? []
