@@ -1,8 +1,4 @@
 {
   "apiKey": "tv2_api_key_91b4fbf634af4bc5",
-  "environment": "development",
-  "backendUrl": "https://api-local-angelo.vio.live",
-  "webSocketUrl": "wss://api-local-angelo.vio.live/ws",
-  "commerceUrl": "https://graph-ql-dev.vio.live/graphql",
-  "country": "NO"
+  "environment": "development"
 }
